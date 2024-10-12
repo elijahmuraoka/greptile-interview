@@ -1,13 +1,21 @@
 'use client';
 
-import { Button } from '../ui/button';
+import { Button, ButtonProps } from '../ui/button';
 import { FaGithub } from 'react-icons/fa';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
-export function LoginButton() {
+interface LoginButtonProps {
+    buttonProps?: ButtonProps;
+    callbackUrl?: string | null;
+}
+
+export function LoginButton({ buttonProps, callbackUrl }: LoginButtonProps) {
     const [authenticated, setAuthenticated] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState(true);
+
+    const { toast } = useToast();
 
     const session = useSession();
 
@@ -25,27 +33,48 @@ export function LoginButton() {
     }, [session]);
 
     const handleClick = async () => {
-        // TODO: render toast notifications
         if (!authenticated) {
             try {
-                await signIn('github');
-            } catch (error) {
-                console.error(error);
+                await signIn('github', { callbackUrl: callbackUrl || '/' });
+                toast({
+                    description:
+                        'You have successfully authenticated by GitHub.',
+                    variant: 'success',
+                });
+            } catch (err) {
+                console.error(err);
+                toast({
+                    description: (err as Error).message,
+                    variant: 'destructive',
+                });
             }
         } else {
             try {
                 await signOut();
-            } catch (error) {
-                console.error(error);
+                toast({
+                    description: 'You have successfully logged out.',
+                    variant: 'success',
+                });
+            } catch (err) {
+                console.error(err);
+                toast({
+                    description: (err as Error).message,
+                    variant: 'destructive',
+                });
             }
         }
     };
 
     return (
-        <Button onClick={handleClick} disabled={isLoading} variant="ghost">
+        <Button
+            onClick={handleClick}
+            disabled={isLoading}
+            variant="ghost"
+            {...buttonProps}
+        >
             {authenticated ? (
                 <>
-                    <FaGithub className="mr-2" /> GitHub Logout
+                    <FaGithub className="mr-2" /> Sign Out
                 </>
             ) : isLoading ? (
                 <>
@@ -53,7 +82,7 @@ export function LoginButton() {
                 </>
             ) : (
                 <>
-                    <FaGithub className="mr-2" /> GitHub Login
+                    <FaGithub className="mr-2" /> Sign In
                 </>
             )}
         </Button>

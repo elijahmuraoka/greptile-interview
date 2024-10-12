@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-        domains: ['avatars.githubusercontent.com'],
+        remotePatterns: [{ hostname: 'avatars.githubusercontent.com' }],
     },
     webpack: (config, { webpack }) => {
         config.plugins.push(

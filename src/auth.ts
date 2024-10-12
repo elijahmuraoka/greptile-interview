@@ -26,21 +26,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     pages: {
         signIn: '/login',
     },
-    // callbacks: {
-    //     authorized: async ({ auth }) => {
-    //         // Logged in users are authenticated, otherwise redirect to login page
-    //         return !!auth;
-    //     },
-    // },
-    // cookies: {
-    //     pkceCodeVerifier: {
-    //         name: 'next-auth.pkce.code_verifier',
-    //         options: {
-    //             httpOnly: true,
-    //             sameSite: 'none',
-    //             path: '/',
-    //             secure: process.env.NODE_ENV === 'production',
-    //         },
-    //     },
-    // },
+    callbacks: {
+        authorized: async ({ auth }) => {
+            // Logged in users are authenticated, otherwise redirect to login page
+            return !!auth;
+        },
+        async redirect({ url, baseUrl }) {
+            // Allows relative callback URLs
+            if (url.startsWith('/')) return `${baseUrl}${url}`;
+            // Allows callback URLs on the same origin
+            else if (new URL(url).origin === baseUrl) return url;
+            return baseUrl;
+        },
+    },
 });

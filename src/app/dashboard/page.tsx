@@ -1,14 +1,10 @@
 import Link from 'next/link';
 import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
 import { drizzle } from 'drizzle-orm/vercel-postgres';
+import { redirect } from 'next/navigation';
 
 export default async function Dashboard() {
     const session = await auth();
-
-    if (!session || !session.user) {
-        redirect('/');
-    }
 
     // let user;
     // try {
@@ -25,14 +21,17 @@ export default async function Dashboard() {
     //     return <div>User not found.</div>;
     // }
 
-    return (
-        <div>
-            <h1>Developer Dashboard</h1>
-            <p>Welcome, {session.user.name || session.user.email}</p>
-            <h2>Your Repositories</h2>
-            {/* Add repository management here */}
-            <h2>Your Changelogs</h2>
-            {/* {user.changelogs.length > 0 ? (
+    if (!session || !session.user) {
+        redirect('/login');
+    } else {
+        return (
+            <div>
+                <h1>Developer Dashboard</h1>
+                <p>Welcome, {session.user.name || session.user.email}</p>
+                <h2>Your Repositories</h2>
+                {/* Add repository management here */}
+                <h2>Your Changelogs</h2>
+                {/* {user.changelogs.length > 0 ? (
                 <ul>
                     {user.changelogs.map((changelog) => (
                         <li key={changelog.id}>
@@ -49,7 +48,8 @@ export default async function Dashboard() {
             ) : (
                 <p>You haven't created any changelogs yet.</p>
             )} */}
-            <Link href="/generate-changelog">Create a new changelog</Link>
-        </div>
-    );
+                <Link href="/generate-changelog">Create a new changelog</Link>
+            </div>
+        );
+    }
 }
