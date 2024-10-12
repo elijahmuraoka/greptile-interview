@@ -24,6 +24,7 @@ export default function Navbar() {
 
     const navLink = (page: string) => (
         <Link
+            key={page}
             href={page === 'home' ? '/' : `/${page}`}
             className="text-background text-lg hover:underline transition-all duration-200"
         >
