@@ -26,14 +26,14 @@ export default function Navbar() {
         <Link
             key={page}
             href={page === 'home' ? '/' : `/${page}`}
-            className="text-background text-lg hover:underline transition-all duration-200"
+            className="text-background hover:underline transition-all duration-200"
         >
             {page.charAt(0).toUpperCase() + page.slice(1)}
         </Link>
     );
 
     return (
-        <nav className="absolute top-0 left-0 right-0 w-full bg-foreground text-background px-8 py-4 flex flex-row justify-between items-center drop-shadow-sm z-50">
+        <nav className="fixed top-0 left-0 right-0 w-full h-16 bg-foreground text-background px-4 flex flex-row justify-between items-center drop-shadow-sm z-50">
             {/* Pages */}
             <div className="flex flex-row items-center justify-center gap-4">
                 <Link href="/" className="text-foreground font-bold">

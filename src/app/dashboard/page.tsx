@@ -2,54 +2,59 @@ import Link from 'next/link';
 import { auth } from '@/auth';
 import { drizzle } from 'drizzle-orm/vercel-postgres';
 import { redirect } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-export default async function Dashboard() {
-    const session = await auth();
-
-    // let user;
-    // try {
-    //     user = await drizzle.user.findUnique({
-    //         where: { email: session.user.email! },
-    //         include: { changelogs: true },
-    //     });
-    // } catch (error) {
-    //     console.error('Failed to fetch user data:', error);
-    //     return <div>Failed to load dashboard. Please try again later.</div>;
-    // }
-
-    // if (!user) {
-    //     return <div>User not found.</div>;
-    // }
-
-    if (!session || !session.user) {
-        redirect('/login');
-    } else {
-        return (
-            <div>
-                <h1>Developer Dashboard</h1>
-                <p>Welcome, {session.user.name || session.user.email}</p>
-                <h2>Your Repositories</h2>
-                {/* Add repository management here */}
-                <h2>Your Changelogs</h2>
-                {/* {user.changelogs.length > 0 ? (
-                <ul>
-                    {user.changelogs.map((changelog) => (
-                        <li key={changelog.id}>
-                            {changelog.title}
-                            <Link href={`/edit-changelog/${changelog.id}`}>
-                                Edit
-                            </Link>
-                            <Link href={`/changelog/${changelog.id}`}>
-                                View Public
-                            </Link>
-                        </li>
-                    ))}
-                </ul>
-            ) : (
-                <p>You haven't created any changelogs yet.</p>
-            )} */}
-                <Link href="/generate-changelog">Create a new changelog</Link>
+export default function Dashboard() {
+    return (
+        <div className="w-full flex-1 flex-col flex gap-8 justify-start items-center pt-12">
+            <h1 className="text-2xl font-semibold">
+                Welcome back! <br /> Here's an overview of your recent activity
+                and available actions.
+            </h1>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Recent Activity</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <ul className="list-disc pl-5">
+                            <li>Generated changelog for Project A</li>
+                            <li>Updated repository settings</li>
+                            <li>Reviewed 3 changelogs</li>
+                        </ul>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Statistics</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex justify-between mb-2">
+                            <span>Total Changelogs:</span>
+                            <span className="font-semibold">27</span>
+                        </div>
+                        <div className="flex justify-between mb-2">
+                            <span>Repositories Connected:</span>
+                            <span className="font-semibold">5</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span>Last Generation:</span>
+                            <span className="font-semibold">2 days ago</span>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Quick Actions</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-2">
+                        <Button>Generate New Changelog</Button>
+                        <Button variant="outline">Connect Repository</Button>
+                        <Button variant="outline">View All Changelogs</Button>
+                    </CardContent>
+                </Card>
             </div>
-        );
-    }
+        </div>
+    );
 }

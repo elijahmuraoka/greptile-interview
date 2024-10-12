@@ -12,7 +12,7 @@ export default function Logo({ className, invert = false }: LogoProps) {
     return (
         <SiBookstack
             className={cn(
-                'text-5xl border-[2px] rounded-lg p-[6px]',
+                'text-4xl border-[1px] rounded-lg p-[6px]',
                 `${
                     invert
                         ? 'text-background border-background'

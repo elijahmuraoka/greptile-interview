@@ -50,13 +50,6 @@ const Toast = React.forwardRef<
         <ToastPrimitives.Root
             ref={ref}
             className={cn(toastVariants({ variant }), className)}
-            title={
-                variant == 'success'
-                    ? '🎉 SUCCESS'
-                    : variant == 'destructive'
-                    ? '❌ FAILED'
-                    : props.title
-            }
             duration={5000}
             {...props}
         />

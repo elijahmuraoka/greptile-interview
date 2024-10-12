@@ -3,7 +3,7 @@
 import { Button, ButtonProps } from '../ui/button';
 import { FaGithub } from 'react-icons/fa';
 import { useSession, signIn, signOut } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 interface LoginButtonProps {
@@ -12,45 +12,47 @@ interface LoginButtonProps {
 }
 
 export function LoginButton({ buttonProps, callbackUrl }: LoginButtonProps) {
-    const [authenticated, setAuthenticated] = useState<boolean>(false);
-    const [isLoading, setIsLoading] = useState(true);
-
+    const [isLoading, setIsLoading] = useState(false);
+    const [showToast, setShowToast] = useState(false);
+    const { data: session, status } = useSession();
     const { toast } = useToast();
 
-    const session = useSession();
-
     useEffect(() => {
-        const { status } = session;
-        if (status === 'authenticated') {
-            setAuthenticated(true);
+        if (session?.justSignedIn) {
+            console.log('User session: ', session);
+            setShowToast(true);
             setIsLoading(false);
-        } else if (status === 'unauthenticated') {
-            setAuthenticated(false);
-            setIsLoading(false);
-        } else if (status === 'loading') {
-            setIsLoading(true);
         }
     }, [session]);
 
+    useEffect(() => {
+        if (showToast) {
+            toast({
+                description: 'You have successfully signed in.',
+                variant: 'success',
+            });
+            setShowToast(false);
+        }
+    }, [showToast]);
+
     const handleClick = async () => {
-        if (!authenticated) {
+        setIsLoading(true);
+        if (!session) {
             try {
-                await signIn('github', { callbackUrl: callbackUrl || '/' });
-                toast({
-                    description:
-                        'You have successfully authenticated by GitHub.',
-                    variant: 'success',
+                await signIn('github', {
+                    redirect: false,
+                    callbackUrl: callbackUrl || '/',
                 });
             } catch (err) {
                 console.error(err);
                 toast({
-                    description: (err as Error).message,
+                    description: 'Failed to sign in.',
                     variant: 'destructive',
                 });
             }
         } else {
             try {
-                await signOut();
+                await signOut({ redirect: false });
                 toast({
                     description: 'You have successfully logged out.',
                     variant: 'success',
@@ -58,9 +60,11 @@ export function LoginButton({ buttonProps, callbackUrl }: LoginButtonProps) {
             } catch (err) {
                 console.error(err);
                 toast({
-                    description: (err as Error).message,
+                    description: 'Failed to sign out.',
                     variant: 'destructive',
                 });
+            } finally {
+                setIsLoading(false);
             }
         }
     };
@@ -68,17 +72,17 @@ export function LoginButton({ buttonProps, callbackUrl }: LoginButtonProps) {
     return (
         <Button
             onClick={handleClick}
-            disabled={isLoading}
+            disabled={isLoading || status === 'loading'}
             variant="ghost"
             {...buttonProps}
         >
-            {authenticated ? (
+            {isLoading || status === 'loading' ? (
+                <>
+                    <FaGithub className="mr-2 animate-spin" /> Loading...
+                </>
+            ) : session ? (
                 <>
                     <FaGithub className="mr-2" /> Sign Out
-                </>
-            ) : isLoading ? (
-                <>
-                    <FaGithub className="mr-2" /> Loading...
                 </>
             ) : (
                 <>
