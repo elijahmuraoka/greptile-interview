@@ -11,11 +11,15 @@ import {
 } from '@/components/ui/hover-card';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { useToast } from '@/hooks/use-toast';
 
 const allPages = ['home', 'dashboard', 'directory'];
+const protectedPages = ['dashboard'];
 
 export default function Navbar() {
     const { data: session } = useSession();
+
+    const { toast } = useToast();
 
     const pathname = usePathname();
     const currPage = pathname?.split('/')[1] || 'home';
@@ -26,6 +30,15 @@ export default function Navbar() {
         <Link
             key={page}
             href={page === 'home' ? '/' : `/${page}`}
+            onClick={() => {
+                if (protectedPages.includes(page) && !session) {
+                    toast({
+                        description:
+                            'Please login first to continue to this page.',
+                        variant: 'destructive',
+                    });
+                }
+            }}
             className="text-background hover:underline transition-all duration-200"
         >
             {page.charAt(0).toUpperCase() + page.slice(1)}
