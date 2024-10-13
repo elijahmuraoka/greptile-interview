@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { LoginButton } from './login-button';
-import Image from 'next/image';
 import Logo from './logo';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
     HoverCard,
     HoverCardContent,
@@ -68,15 +68,19 @@ export default function Navbar() {
             </div>
             {/* User */}
             <div className="flex flex-row items-center justify-center gap-4">
-                <LoginButton />
+                <LoginButton
+                    buttonProps={{
+                        variant: 'default',
+                        className: 'hover:opacity-75 ease-in-out duration-200',
+                    }}
+                />
                 {!!session?.user && (
-                    <Image
-                        src={session.user.image!}
-                        alt="User Avatar"
-                        width={32}
-                        height={32}
-                        className="rounded-full shadow-md border-[1px] border-border"
-                    />
+                    <Avatar>
+                        <AvatarImage src={session.user.image!} />
+                        <AvatarFallback>
+                            {session.user.name?.[0].toUpperCase() ?? '?'}
+                        </AvatarFallback>
+                    </Avatar>
                 )}
             </div>
         </nav>
