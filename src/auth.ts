@@ -1,11 +1,8 @@
 import NextAuth from 'next-auth';
 import GitHubProvider from 'next-auth/providers/github';
-import { DrizzleAdapter } from '@auth/drizzle-adapter';
-import { db } from './db';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     trustHost: true,
-    adapter: DrizzleAdapter(db),
     session: {
         strategy: 'jwt',
         maxAge: 60 * 60 * 24 * 30,
@@ -27,23 +24,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         signIn: '/login',
     },
     callbacks: {
-        async session({ session, token }) {
-            if (token.justSignedIn) {
-                session.justSignedIn = true;
-                // Reset the flag immediately after use
-                token.justSignedIn = false;
-            } else {
-                session.justSignedIn = false;
-            }
-            return session;
-        },
-        async jwt({ token, account }) {
-            if (account) {
-                // This means it's a sign in event
-                token.justSignedIn = true;
-            }
-            return token;
-        },
         authorized: async ({ auth }) => {
             // Logged in users are authenticated, otherwise redirect to login page
             return !!auth;

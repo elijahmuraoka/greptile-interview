@@ -1,6 +1,6 @@
-import { auth } from '@/auth';
 import Logo from '@/components/custom/logo';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default async function Home() {
     return (
@@ -13,10 +13,12 @@ export default async function Home() {
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md">
                 <Button className="w-full sm:w-auto">
-                    I want to make changelogs
+                    <Link href="/dashboard">I want to make changelogs</Link>
                 </Button>
                 <Button variant="ghost" className="w-full sm:w-auto">
-                    I just want to browse changelogs
+                    <Link href="/directory">
+                        I just want to browse changelogs
+                    </Link>
                 </Button>
             </div>
         </div>
