@@ -3,6 +3,7 @@
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -10,37 +11,35 @@ import {
 import { getRepositories } from '@/actions/githubActions';
 import { useState, useEffect } from 'react';
 import * as React from 'react';
-import { Check, ChevronsUpDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import Changelog from './changelog';
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-} from '@/components/ui/command';
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
 import { Repository } from '@/actions/githubActions';
 import { ChangelogWithEntries } from '@/db/schema';
 import { generateAndSaveChangelog } from '@/actions/changelogActions';
+import RepositorySearch from './repository-search';
+
+const steps = [
+    {
+        title: 'Choose a Repository',
+        description: 'Select a repository to generate a changelog for.',
+    },
+    {
+        title: 'Edit and Publish',
+        description:
+            'Make any necessary changes, then choose visibility and publish.',
+    },
+];
 
 export default function GenerateChangelogModal() {
     const [repositories, setRepositories] = useState<Repository[]>([]);
     const [changelog, setChangelog] = useState<ChangelogWithEntries | null>(
         null
     );
-    const [open, setOpen] = useState(false);
     const [selectedRepository, setSelectedRepository] =
         useState<Repository | null>(null);
     const [isGeneratingChangelog, setIsGeneratingChangelog] = useState(false);
+    const [currentStep, setCurrentStep] = useState(0);
 
     const { toast } = useToast();
 
@@ -66,6 +65,7 @@ export default function GenerateChangelogModal() {
         try {
             const changelog = await generateAndSaveChangelog(
                 selectedRepository,
+                // TODO: Make this configurable
                 {
                     unit: 'days',
                     value: 14,
@@ -76,6 +76,7 @@ export default function GenerateChangelogModal() {
                 description: 'Changelog generated successfully.',
                 variant: 'success',
             });
+            setCurrentStep(1);
         } catch (error) {
             console.error('Error generating changelog: ', error);
             toast({
@@ -95,70 +96,18 @@ export default function GenerateChangelogModal() {
             <DialogContent className="max-w-2xl flex flex-col gap-8 items-center p-12">
                 <DialogHeader>
                     <DialogTitle className="text-2xl">
-                        Step 1: Select A Repository
+                        Step {currentStep + 1}: {steps[currentStep].title}
                     </DialogTitle>
+                    <DialogDescription>
+                        {steps[currentStep].description}
+                    </DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-row gap-4 w-full justify-center items-center">
-                    <Popover open={open} onOpenChange={setOpen}>
-                        <PopoverTrigger asChild>
-                            <Button
-                                variant="outline"
-                                role="combobox"
-                                aria-expanded={open}
-                                className="w-full justify-between"
-                            >
-                                {selectedRepository
-                                    ? repositories.find(
-                                          (repository) =>
-                                              repository.id ===
-                                              selectedRepository.id
-                                      )?.name
-                                    : 'Select repository...'}
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-full p-0">
-                            <Command>
-                                <CommandInput placeholder="Search repository..." />
-                                <CommandList>
-                                    <CommandEmpty>
-                                        No repository found.
-                                    </CommandEmpty>
-                                    <CommandGroup>
-                                        {repositories.map((repository) => (
-                                            <CommandItem
-                                                key={repository.id}
-                                                value={repository.name}
-                                                onSelect={(
-                                                    currentSelectedRepository
-                                                ) => {
-                                                    setSelectedRepository(
-                                                        repositories.find(
-                                                            (repo) =>
-                                                                repo.name ===
-                                                                currentSelectedRepository
-                                                        ) || selectedRepository
-                                                    );
-                                                    setOpen(false);
-                                                }}
-                                            >
-                                                <Check
-                                                    className={cn(
-                                                        'mr-2 h-4 w-4',
-                                                        selectedRepository?.id ===
-                                                            repository.id
-                                                            ? 'opacity-100'
-                                                            : 'opacity-0'
-                                                    )}
-                                                />
-                                                {repository.name}
-                                            </CommandItem>
-                                        ))}
-                                    </CommandGroup>
-                                </CommandList>
-                            </Command>
-                        </PopoverContent>
-                    </Popover>
+                    <RepositorySearch
+                        repositories={repositories}
+                        selectedRepository={selectedRepository}
+                        setSelectedRepository={setSelectedRepository}
+                    />
                     <Button
                         disabled={!selectedRepository || isGeneratingChangelog}
                         onClick={handleGenerateChangelog}
@@ -166,7 +115,7 @@ export default function GenerateChangelogModal() {
                     >
                         {isGeneratingChangelog
                             ? 'Generating...'
-                            : 'AI Generate Changelog'}
+                            : 'Generate Changelog'}
                     </Button>
                 </div>
                 <Changelog changelog={changelog} />
