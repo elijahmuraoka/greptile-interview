@@ -80,7 +80,8 @@ export default function GenerateChangelogModal() {
         } catch (error) {
             console.error('Error generating changelog: ', error);
             toast({
-                description: 'Failed to generate changelog.',
+                description:
+                    (error as Error).message || 'Failed to generate changelog.',
                 variant: 'destructive',
             });
         } finally {
@@ -93,7 +94,7 @@ export default function GenerateChangelogModal() {
             <DialogTrigger>
                 <Button className="w-full">Generate New Changelog</Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl flex flex-col gap-8 items-center p-12">
+            <DialogContent className="max-w-4xl flex flex-col gap-8 items-center p-12">
                 <DialogHeader>
                     <DialogTitle className="text-2xl">
                         Step {currentStep + 1}: {steps[currentStep].title}

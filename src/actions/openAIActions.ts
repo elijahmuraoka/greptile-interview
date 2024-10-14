@@ -12,6 +12,10 @@ export async function generateChangelog(
 ): Promise<NewChangelogWithEntries> {
     console.log('Generating changelog using OpenAI');
 
+    if (commitData.length === 0) {
+        throw new Error('No recent repository activity found.');
+    }
+
     const prompt = `Generate a detailed, professional changelog for the repository "${repositoryName}" based on the following commit information:
 
 ${commitData
@@ -69,23 +73,24 @@ Please provide a JSON response with the following structure:
 }
 
 When generating the changelog, please follow these guidelines:
-1. Organize commits into logical, coherent groups. Each entry should represent a significant change, feature, or fix.
-2. Provide clear, concise descriptions that are understandable to both technical and non-technical audiences.
-3. Use professional language and maintain a consistent tone throughout the changelog.
-4. Highlight important changes, especially new features, major enhancements, and breaking changes.
-5. For breaking changes, clearly explain what has changed and what actions users need to take.
-6. Include relevant technical details for developers, but also explain the impact and benefits for end-users.
-7. If multiple commits or pull requests relate to the same change, combine them into a single, comprehensive entry.
-8. Use the tags to categorize each entry appropriately. You can use multiple tags if applicable.
-9. In the 'impact' field, focus on the practical implications of the change.
-10. Ensure that commits are correctly associated with their pull requests if applicable.
-11. If a change addresses a specific issue or feature request, mention it in the message (e.g., "Fixes #123").
-12. For significant changes, use the 'technicalDetails' field to provide more in-depth information for developers.
-13. Use the 'userBenefit' field to explain how each change improves the product for end-users in non-technical terms.
-14. Only include the 'pullRequests' array if there are actual pull requests associated with the entry. If there are no pull requests, omit this field entirely rather than including null values.
-15. Ensure that all fields in the pullRequests and commits objects have valid values. Do not include null values for prNumber, title, or url in pullRequests.
+1. Only use information provided in the commit data. Do not invent or hallucinate any additional information.
+2. Organize commits into logical, coherent groups. Each entry should represent a significant change, feature, or fix.
+3. Provide clear, concise descriptions that are understandable to both technical and non-technical audiences.
+4. Use professional language and maintain a consistent tone throughout the changelog.
+5. Highlight important changes, especially new features, major enhancements, and breaking changes.
+6. For breaking changes, clearly explain what has changed and what actions users need to take.
+7. Include relevant technical details for developers, but also explain the impact and benefits for end-users.
+8. If multiple commits or pull requests relate to the same change, combine them into a single, comprehensive entry.
+9. Use the tags to categorize each entry appropriately. You can use multiple tags if applicable.
+10. In the 'impact' field, focus on the practical implications of the change.
+11. Ensure that commits are correctly associated with their pull requests if applicable.
+12. If a change addresses a specific issue or feature request, mention it in the message (e.g., "Fixes #123").
+13. For significant changes, use the 'technicalDetails' field to provide more in-depth information for developers.
+14. Use the 'userBenefit' field to explain how each change improves the product for end-users in non-technical terms.
+15. Only include the 'pullRequests' array if there are actual pull requests associated with the entry. If there are no pull requests, omit this field entirely.
+16. Ensure that all fields in the pullRequests and commits objects have valid values. Do not include null or made-up values.
 
-The goal is to create a changelog that serves as a valuable resource for both developers and end-users, providing a clear overview of the project's evolution.`;
+The goal is to create a changelog that accurately reflects the provided commit data, serving as a valuable resource for both developers and end-users.`;
 
     try {
         const response = await openai.chat.completions.create({
@@ -94,7 +99,7 @@ The goal is to create a changelog that serves as a valuable resource for both de
                 {
                     role: 'system',
                     content:
-                        'You are a helpful assistant that generates detailed and professional changelogs in JSON format.',
+                        'You are a helpful assistant that generates detailed and professional changelogs in JSON format. Do not make up any information. Only generate content that is based on the provided commit data.',
                 },
                 { role: 'user', content: prompt },
             ],

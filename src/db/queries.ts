@@ -71,6 +71,8 @@ export async function createChangelog(
                             message: entry.message,
                             tags: entry.tags,
                             impact: entry.impact,
+                            technicalDetails: entry.technicalDetails,
+                            userBenefit: entry.userBenefit,
                             breakingChange: entry.breakingChange,
                         })
                         .returning();
