@@ -14,6 +14,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             clientSecret: process.env.GITHUB_SECRET!,
             authorization: {
                 params: {
+                    scope: 'read:user repo',
                     redirect_uri: `${process.env
                         .NEXT_PUBLIC_AUTH_URL!}/api/auth/callback/github`,
                 },

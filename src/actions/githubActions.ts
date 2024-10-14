@@ -51,9 +51,33 @@ export async function getRepositories() {
 
     try {
         const octokit = new Octokit({ auth: session.accessToken });
-        const { data: repositories } =
-            await octokit.rest.repos.listForAuthenticatedUser();
-        return repositories;
+        let page = 1;
+        let allRepositories: any[] = [];
+
+        while (true) {
+            const { data: repositories } =
+                await octokit.rest.repos.listForAuthenticatedUser({
+                    visibility: 'all',
+                    sort: 'updated',
+                    direction: 'desc',
+                    per_page: 100,
+                    page: page,
+                });
+
+            const filteredRepositories = repositories.filter((repo) => {
+                return (
+                    !repo.fork ||
+                    (repo.fork && repo.owner.login === session.user?.name)
+                );
+            });
+
+            allRepositories = allRepositories.concat(filteredRepositories);
+
+            if (repositories.length < 100) break; // No more pages
+            page++;
+        }
+
+        return allRepositories;
     } catch (error) {
         console.error('Error fetching repositories:', error);
         throw error;
