@@ -43,7 +43,7 @@ ${commitData
 Please provide a JSON response with the following structure:
 {
   "title": "Changelog for ${repositoryName}",
-  "summary": "A comprehensive summary of the overall changes, highlighting major features, improvements, and any breaking changes",
+  "summary": "Summarize the most significant changes and their impact in 2-3 concise, informative sentences.",
   "entries": [
     {
       "message": "A clear, concise description of the change that both developers and end-users can understand",

@@ -31,7 +31,13 @@ const steps = [
     },
 ];
 
-export default function GenerateChangelogModal() {
+interface GenerateChangelogModalProps {
+    onChangelogGenerated: () => void;
+}
+
+export default function GenerateChangelogModal({
+    onChangelogGenerated,
+}: GenerateChangelogModalProps) {
     const [repositories, setRepositories] = useState<Repository[]>([]);
     const [changelog, setChangelog] = useState<ChangelogWithEntries | null>(
         null
@@ -86,6 +92,7 @@ export default function GenerateChangelogModal() {
             });
         } finally {
             setIsGeneratingChangelog(false);
+            onChangelogGenerated();
         }
     };
 
@@ -94,8 +101,8 @@ export default function GenerateChangelogModal() {
             <DialogTrigger>
                 <Button className="w-full">Generate New Changelog</Button>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl flex flex-col gap-8 items-center p-12">
-                <DialogHeader>
+            <DialogContent className="max-w-4xl flex flex-col justify-center gap-8 items-center p-12">
+                <DialogHeader className="w-full flex flex-col items-center justify-center">
                     <DialogTitle className="text-2xl">
                         Step {currentStep + 1}: {steps[currentStep].title}
                     </DialogTitle>
@@ -112,7 +119,7 @@ export default function GenerateChangelogModal() {
                     <Button
                         disabled={!selectedRepository || isGeneratingChangelog}
                         onClick={handleGenerateChangelog}
-                        className="w-2/3"
+                        className="w-full"
                     >
                         {isGeneratingChangelog
                             ? 'Generating...'

@@ -17,6 +17,11 @@ interface DashboardGridProps {
 export default function DashboardGrid({ userId }: DashboardGridProps) {
     const [userChangelogs, setUserChangelogs] = useState<Changelog[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [updateTrigger, setUpdateTrigger] = useState(0);
+
+    const triggerUpdate = () => {
+        setUpdateTrigger((prev) => prev + 1);
+    };
 
     useEffect(() => {
         const fetchChangelogs = async () => {
@@ -31,7 +36,7 @@ export default function DashboardGrid({ userId }: DashboardGridProps) {
         };
 
         fetchChangelogs();
-    }, [userId]);
+    }, [userId, updateTrigger]);
 
     const lastUpdatedChangelog = userChangelogs[0];
     const lastUpdatedChangelogTitle = lastUpdatedChangelog?.title ?? 'N/A';
@@ -86,7 +91,9 @@ export default function DashboardGrid({ userId }: DashboardGridProps) {
                     <CardTitle>Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-4">
-                    <GenerateChangelogModal />
+                    <GenerateChangelogModal
+                        onChangelogGenerated={triggerUpdate}
+                    />
                     <Button variant="outline" asChild className="w-full">
                         <Link href="/directory">View Public Directory</Link>
                     </Button>
