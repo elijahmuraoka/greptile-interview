@@ -1,75 +1,125 @@
 'use client';
 
 import { ChangelogWithEntries } from '@/db/schema';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { ExternalLink } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from '@/components/ui/accordion';
 
 interface ChangelogProps {
     changelog: ChangelogWithEntries | null;
 }
 
-const fakePullRequests = [
-    {
-        prNumber: 1,
-        title: 'Fix bug',
-        url: 'https://github.com/org/repo/pull/1',
-    },
-];
-
 export default function Changelog({ changelog }: ChangelogProps) {
+    if (!changelog) {
+        return null;
+    }
+
     return (
-        <ul className="space-y-4 h-[70vh] md:h-[50vh] overflow-y-auto">
-            {changelog?.entries.map((entry) => (
-                <li
-                    key={entry.id}
-                    className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden"
-                >
-                    <div className="p-4">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
-                            {entry.message}
-                        </h3>
-                        <div className="flex flex-wrap gap-2 mb-2">
-                            {entry.tags?.map((tag, index) => (
-                                <span
-                                    key={index}
-                                    className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full dark:bg-blue-900 dark:text-blue-300"
-                                >
-                                    {tag}
-                                </span>
-                            ))}
-                        </div>
-                        {entry.impact && (
-                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                                Impact: {entry.impact}
-                            </p>
-                        )}
-                        {entry.breakingChange && (
-                            <p className="text-sm font-bold text-red-600 dark:text-red-400">
-                                Breaking Change
-                            </p>
-                        )}
-                    </div>
-                    {fakePullRequests && (
-                        <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 border-t border-gray-200 dark:border-gray-600">
-                            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Associated Pull Requests:
-                            </h4>
-                            <ul className="space-y-1">
-                                {fakePullRequests.map((pr) => (
-                                    <li key={pr.prNumber}>
-                                        <a
-                                            href={pr.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                                        >
-                                            #{pr.prNumber} - {pr.title}
-                                        </a>
-                                    </li>
+        <ScrollArea className="h-[70vh] md:h-[50vh]">
+            <div className="space-y-4 p-4">
+                {changelog?.entries.map((entry) => (
+                    <Card key={entry.id}>
+                        <CardHeader className="flex flex-col space-y-2 mb-[-5px]">
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-lg">
+                                    {entry.message}
+                                </CardTitle>
+                                {entry.breakingChange && (
+                                    <Badge variant="destructive">
+                                        Breaking Change
+                                    </Badge>
+                                )}
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {entry.tags?.map((tag, index) => (
+                                    <Badge key={index} variant="tag">
+                                        {tag.charAt(0).toUpperCase() +
+                                            tag.slice(1)}
+                                    </Badge>
                                 ))}
-                            </ul>
-                        </div>
-                    )}
-                </li>
-            ))}
-        </ul>
+                            </div>
+                        </CardHeader>
+                        <Separator className="w-[95%] mx-auto" />
+                        <CardContent className="pt-4">
+                            <div className="space-y-2">
+                                {entry.impact && (
+                                    <p className="text-sm">
+                                        <span className="font-semibold">
+                                            Impact:
+                                        </span>{' '}
+                                        {entry.impact}
+                                    </p>
+                                )}
+                                {entry.technicalDetails && (
+                                    <p className="text-sm">
+                                        <span className="font-semibold">
+                                            Technical Details:
+                                        </span>{' '}
+                                        {entry.technicalDetails}
+                                    </p>
+                                )}
+                                {entry.userBenefit && (
+                                    <p className="text-sm">
+                                        <span className="font-semibold">
+                                            User Benefit:
+                                        </span>{' '}
+                                        {entry.userBenefit}
+                                    </p>
+                                )}
+                                {entry.pullRequests &&
+                                    entry.pullRequests.length > 0 && (
+                                        <Accordion type="single" collapsible>
+                                            <AccordionItem value="pull-requests">
+                                                <AccordionTrigger>
+                                                    Associated Pull Requests
+                                                </AccordionTrigger>
+                                                <AccordionContent>
+                                                    <ul className="space-y-2">
+                                                        {entry.pullRequests.map(
+                                                            (pr) => (
+                                                                <li
+                                                                    key={pr.id}
+                                                                    className="flex items-center"
+                                                                >
+                                                                    <ExternalLink className="h-4 w-4 mr-2 flex-shrink-0" />
+                                                                    <a
+                                                                        href={
+                                                                            pr.url
+                                                                        }
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                                                    >
+                                                                        #
+                                                                        {
+                                                                            pr.prNumber
+                                                                        }{' '}
+                                                                        -{' '}
+                                                                        {
+                                                                            pr.title
+                                                                        }
+                                                                    </a>
+                                                                </li>
+                                                            )
+                                                        )}
+                                                    </ul>
+                                                </AccordionContent>
+                                            </AccordionItem>
+                                        </Accordion>
+                                    )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        </ScrollArea>
     );
 }

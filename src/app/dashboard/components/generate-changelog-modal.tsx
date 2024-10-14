@@ -31,6 +31,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Repository } from '@/actions/githubActions';
 import { ChangelogWithEntries } from '@/db/schema';
 import { generateAndSaveChangelog } from '@/actions/changelogActions';
+import { fakeChangelog } from '@/lib/testData';
 
 export default function GenerateChangelogModal() {
     const [repositories, setRepositories] = useState<Repository[]>([]);
