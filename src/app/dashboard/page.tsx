@@ -12,7 +12,7 @@ export default async function Dashboard() {
     }
 
     return (
-        <div className="w-full flex-1 flex-col flex gap-8 justify-center items-center pt-12 px-8">
+        <div className="w-full flex-1 flex flex-col gap-8 pt-12 px-8 items-center">
             <div className="w-full flex flex-col gap-2">
                 <h1 className="text-3xl font-semibold">
                     Welcome back, {user.name}!

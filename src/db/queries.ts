@@ -9,7 +9,7 @@ import {
     PullRequest,
     commits,
 } from './schema';
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 
 // Users
 export async function getUserByEmail(email: string) {
@@ -192,5 +192,6 @@ export async function getChangelogsByUserId(userId: string) {
     return await db
         .select()
         .from(changelogs)
-        .where(eq(changelogs.userId, userId));
+        .where(eq(changelogs.userId, userId))
+        .orderBy(desc(changelogs.updatedAt));
 }
