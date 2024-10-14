@@ -1,33 +1,33 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChangelogWithEntries } from '@/db/schema';
+import { Changelog } from '@/db/schema';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { getChangelogsByUserIdAction } from '@/actions/changelogActions';
 import GenerateChangelogModal from './generate-changelog-modal';
+import ChangelogList from './ChangelogList';
 
 interface DashboardGridProps {
     userId: string;
 }
 
 export default function DashboardGrid({ userId }: DashboardGridProps) {
-    const [userChangelogs, setUserChangelogs] = useState<
-        ChangelogWithEntries[]
-    >([]);
+    const [userChangelogs, setUserChangelogs] = useState<Changelog[]>([]);
 
-    // useEffect(() => {
-    //     const fetchAndSetChangelogs = async () => {
-    //         try {
-    //             const changelogs = await getChangelogsByUserIdAction(userId);
-    //             setUserChangelogs(changelogs);
-    //         } catch (error) {
-    //             console.error('Error fetching changelogs: ', error);
-    //         }
-    //     };
+    useEffect(() => {
+        const fetchAndSetChangelogs = async () => {
+            try {
+                const changelogs = await getChangelogsByUserIdAction(userId);
+                setUserChangelogs(changelogs);
+            } catch (error) {
+                console.error('Error fetching changelogs: ', error);
+            }
+        };
 
-    //     fetchAndSetChangelogs();
-    // }, [userId]);
+        fetchAndSetChangelogs();
+    }, [userId]);
 
     const lastUpdatedChangelog = userChangelogs.sort(
         (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()
@@ -80,7 +80,7 @@ export default function DashboardGrid({ userId }: DashboardGridProps) {
                     <CardTitle>My Changelogs</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    {/* <ChangelogList changelogs={userChangelogs} /> */}
+                    <ChangelogList changelogs={userChangelogs} />
                 </CardContent>
             </Card>
         </div>

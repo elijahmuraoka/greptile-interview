@@ -169,3 +169,28 @@ export async function createChangelog(
         }
     });
 }
+
+export async function getChangelogWithEntriesByChangelogId(
+    changelogId: string
+) {
+    return await db
+        .select()
+        .from(changelogs)
+        .where(eq(changelogs.id, changelogId))
+        .leftJoin(
+            changelogEntries,
+            eq(changelogs.id, changelogEntries.changelogId)
+        )
+        .leftJoin(
+            pullRequests,
+            eq(changelogEntries.id, pullRequests.changelogEntryId)
+        )
+        .leftJoin(commits, eq(changelogEntries.id, commits.changelogEntryId));
+}
+
+export async function getChangelogsByUserId(userId: string) {
+    return await db
+        .select()
+        .from(changelogs)
+        .where(eq(changelogs.userId, userId));
+}

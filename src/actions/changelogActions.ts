@@ -1,18 +1,22 @@
 'use server';
 
-import { createChangelog, getAllChangelogs } from '@/db/queries';
+import {
+    createChangelog,
+    getAllChangelogs,
+    getChangelogsByUserId,
+} from '@/db/queries';
 import { getCommitsByRepo } from './githubActions';
 import { generateChangelog } from './openAIActions';
 import { auth } from '@/auth';
 import { Repository } from './githubActions';
-import { NewChangelogWithEntries } from '@/db/schema';
+import { Changelog, NewChangelogWithEntries } from '@/db/schema';
 import { getUserByEmailAction } from './userActions';
 
-// export async function getChangelogsByUserIdAction(
-//     userId: string
-// ): Promise<ChangelogWithEntries[]> {
-//     return await getChangelogsByUserId(userId);
-// }
+export async function getChangelogsByUserIdAction(
+    userId: string
+): Promise<Changelog[]> {
+    return await getChangelogsByUserId(userId);
+}
 
 export async function getAllChangelogsAction() {
     return await getAllChangelogs();

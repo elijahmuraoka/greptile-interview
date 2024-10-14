@@ -17,11 +17,13 @@ export default async function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en" className="h-full">
-            <body className={`${inter.className} flex flex-col min-h-screen`}>
+        <html lang="en" className="size-full mx-auto">
+            <body
+                className={`${inter.className} flex flex-col min-h-screen mx-auto`}
+            >
                 <Providers>
                     <Navbar />
-                    <main className="flex-1 flex flex-col pt-16 px-4 sm:px-6 lg:px-8 max-w-7xl">
+                    <main className="mx-auto flex-1 flex flex-col py-16 px-4 sm:px-6 lg:px-8 max-w-7xl">
                         {children}
                     </main>
                     <Toaster />
