@@ -21,17 +21,21 @@ export function LoginButton({ buttonProps, callbackUrl }: LoginButtonProps) {
 
     useEffect(() => {
         const createUserInDatabase = async () => {
-            const existingUser = await getUserByEmailAction(
-                session?.user?.email!
-            );
-            if (!existingUser) {
-                await createUserAction({
-                    id: session?.user?.id!,
-                    name: session?.user?.name!,
-                    email: session?.user?.email!,
-                    emailVerified: new Date(),
-                    image: session?.user?.image!,
-                });
+            try {
+                const existingUser = await getUserByEmailAction(
+                    session?.user?.email!
+                );
+
+                if (!existingUser) {
+                    await createUserAction({
+                        name: session?.user?.name!,
+                        email: session?.user?.email!,
+                        emailVerified: new Date(),
+                        image: session?.user?.image!,
+                    });
+                }
+            } catch (error) {
+                console.error('Error creating user in database: ', error);
             }
         };
 

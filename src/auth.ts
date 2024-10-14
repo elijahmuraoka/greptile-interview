@@ -24,6 +24,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         signIn: '/login',
     },
     callbacks: {
+        async session({ session, token }) {
+            session.accessToken = token.accessToken as string;
+            return session;
+        },
+        async jwt({ token, account }) {
+            if (account) {
+                token.accessToken = account.access_token;
+            }
+            return token;
+        },
         authorized: async ({ auth }) => {
             // Logged in users are authenticated, otherwise redirect to login page
             return !!auth;

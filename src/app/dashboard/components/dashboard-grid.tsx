@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { changelogs } from '@/db/schema';
-import { getChangelogsByUserIdAction } from '@/actions/changelogActions';
+import { ChangelogWithEntries } from '@/db/schema';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import GenerateChangelogModal from './generate-changelog-modal';
 
 interface DashboardGridProps {
     userId: string;
@@ -13,20 +13,21 @@ interface DashboardGridProps {
 
 export default function DashboardGrid({ userId }: DashboardGridProps) {
     const [userChangelogs, setUserChangelogs] = useState<
-        (typeof changelogs.$inferSelect)[]
+        ChangelogWithEntries[]
     >([]);
 
-    useEffect(() => {
-        const fetchAndSetChangelogs = async () => {
-            try {
-                setUserChangelogs(await getChangelogsByUserIdAction(userId));
-            } catch (error) {
-                console.error('Error fetching changelogs: ', error);
-            }
-        };
+    // useEffect(() => {
+    //     const fetchAndSetChangelogs = async () => {
+    //         try {
+    //             const changelogs = await getChangelogsByUserIdAction(userId);
+    //             setUserChangelogs(changelogs);
+    //         } catch (error) {
+    //             console.error('Error fetching changelogs: ', error);
+    //         }
+    //     };
 
-        fetchAndSetChangelogs();
-    }, [userId]);
+    //     fetchAndSetChangelogs();
+    // }, [userId]);
 
     const lastUpdatedChangelog = userChangelogs.sort(
         (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()
@@ -68,7 +69,7 @@ export default function DashboardGrid({ userId }: DashboardGridProps) {
                     <CardTitle>Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-4">
-                    <Button>Generate New Changelog</Button>
+                    <GenerateChangelogModal />
                     <Button variant="outline" asChild>
                         <Link href="/directory">View Public Directory</Link>
                     </Button>
@@ -79,8 +80,7 @@ export default function DashboardGrid({ userId }: DashboardGridProps) {
                     <CardTitle>My Changelogs</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    {/* Add your content here */}
-                    <p>This card spans the full width of the grid.</p>
+                    {/* <ChangelogList changelogs={userChangelogs} /> */}
                 </CardContent>
             </Card>
         </div>
