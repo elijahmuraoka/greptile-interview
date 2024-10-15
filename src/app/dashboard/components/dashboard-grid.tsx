@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { getChangelogsByUserIdAction } from '@/actions/changelogActions';
 import GenerateChangelogModal from './generate-changelog-modal';
-import ChangelogList from './ChangelogList';
+import ChangelogList from './changelog-list';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface DashboardGridProps {
