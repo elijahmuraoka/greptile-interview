@@ -18,11 +18,15 @@ import { Repository } from '@/actions/githubActions';
 import { ChangelogWithEntries } from '@/db/schema';
 import { generateAndSaveChangelog } from '@/actions/changelogActions';
 import RepositorySearch from './repository-search';
+import TimeframeInput from './timeframe-input';
+
+type TimeframeUnit = 'days' | 'months' | 'years';
 
 const steps = [
     {
         title: 'Choose a Repository',
-        description: 'Select a repository to generate a changelog for.',
+        description:
+            'Select a repository and the timeframe to generate the changelog.',
     },
     {
         title: 'Edit and Publish',
@@ -46,6 +50,10 @@ export default function GenerateChangelogModal({
         useState<Repository | null>(null);
     const [isGeneratingChangelog, setIsGeneratingChangelog] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
+    const [timeframe, setTimeframe] = useState<{
+        unit: TimeframeUnit;
+        value: number;
+    }>({ unit: 'days', value: 7 });
 
     const { toast } = useToast();
 
@@ -71,11 +79,7 @@ export default function GenerateChangelogModal({
         try {
             const changelog = await generateAndSaveChangelog(
                 selectedRepository,
-                // TODO: Make this configurable
-                {
-                    unit: 'days',
-                    value: 14,
-                }
+                timeframe
             );
             setChangelog(changelog);
             toast({
@@ -110,23 +114,33 @@ export default function GenerateChangelogModal({
                         {steps[currentStep].description}
                     </DialogDescription>
                 </DialogHeader>
-                <div className="flex flex-row gap-4 w-full justify-center items-center">
-                    <RepositorySearch
-                        repositories={repositories}
-                        selectedRepository={selectedRepository}
-                        setSelectedRepository={setSelectedRepository}
-                    />
-                    <Button
-                        disabled={!selectedRepository || isGeneratingChangelog}
-                        onClick={handleGenerateChangelog}
-                        className="w-full"
-                    >
-                        {isGeneratingChangelog
-                            ? 'Generating...'
-                            : 'Generate Changelog'}
-                    </Button>
-                </div>
-                <Changelog changelog={changelog} />
+                {currentStep === 0 && (
+                    <div className="flex flex-col gap-4 w-full">
+                        <div className="flex flex-row gap-4 w-full justify-between items-center">
+                            <RepositorySearch
+                                repositories={repositories}
+                                selectedRepository={selectedRepository}
+                                setSelectedRepository={setSelectedRepository}
+                            />
+                            <TimeframeInput
+                                timeframe={timeframe}
+                                setTimeframe={setTimeframe}
+                            />
+                        </div>
+                        <Button
+                            disabled={
+                                !selectedRepository || isGeneratingChangelog
+                            }
+                            onClick={handleGenerateChangelog}
+                            className="w-full"
+                        >
+                            {isGeneratingChangelog
+                                ? 'Generating...'
+                                : 'Generate Changelog'}
+                        </Button>
+                    </div>
+                )}
+                {currentStep === 1 && <Changelog changelog={changelog} />}
             </DialogContent>
         </Dialog>
     );
