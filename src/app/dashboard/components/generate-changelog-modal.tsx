@@ -196,10 +196,11 @@ export default function GenerateChangelogModal({
         );
       case 1:
         return (
-          <div className="flex flex-col h-full gap-4 p-4 bg-gradient-to-br from-yellow-50 to-amber-50 rounded-lg shadow-inner overflow-hidden">
+          <div className="flex flex-col h-full gap-4 p-4 bg-gradient-to-br from-yellow-50 to-amber-50 rounded-lg shadow-inner overflow-hidden justify-start items-center">
             {changelog && (
               <Changelog
                 isOwner={true}
+                inModal={true}
                 changelog={changelog}
                 onChangelogUpdate={handleChangelogUpdate}
               />

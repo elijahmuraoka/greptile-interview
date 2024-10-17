@@ -28,7 +28,7 @@ import { useToast } from '@/hooks/use-toast';
 interface ChangelogProps {
   changelog: ChangelogWithEntries;
   isOwner: boolean;
-  inModal?: boolean;
+  inModal: boolean;
   onChangelogUpdate: (updatedChangelog: ChangelogWithEntries) => void;
 }
 
@@ -173,88 +173,96 @@ export default function Changelog({
   };
 
   return (
-    <div className={`${!inModal ? 'w-[90vw]' : 'w-full'} flex flex-col gap-4 bg-transparent`}>
+    <div
+      className={`${!inModal ? 'w-[90vw]' : 'w-full'} flex flex-col gap-4 bg-transparent mx-auto h-full flex-shrink-0`}
+    >
       {/* Navbar - [Undo, Title, Edit] + Summary */}
       <div
         className={`${
-          !inModal ? 'sticky top-16' : ''
-        } flex flex-col text-card-foreground border-b border-border shadow-b-2 z-10 w-full p-4 gap-4 bg-background shadow-[0px_4px_4px_-1px_rgba(0,0,0,0.2)]`}
+          inModal ? 'flex-grow' : 'sticky top-16'
+        } flex flex-col text-card-foreground border-b border-border z-10 w-full p-6 gap-4 bg-background`}
+        style={{ '--navbar-height': 'calc(100% + 1rem)' } as React.CSSProperties}
       >
-        <div
-          className={`${
-            isOwner ? 'justify-between' : 'justify-center'
-          } flex items-center w-full text-center`}
-        >
-          {isOwner && (
-            <Button variant="outline" onClick={handleUndo} disabled={changelogHistory.length <= 1}>
-              <Undo2 className="w-4 h-4 mr-2" /> Undo
-            </Button>
-          )}
-          <div className="w-1/2 text-2xl font-bold max-w-screen-lg mx-auto">
-            {isEditing ? (
-              <Input
-                value={changelog.title}
-                onChange={(e) =>
-                  handleUpdate({
-                    ...changelog,
-                    title: e.target.value,
-                  })
-                }
-                className="text-xl"
-                placeholder="Changelog Title"
-              />
-            ) : (
-              <h2>{changelog.title}</h2>
-            )}
+        <div className="flex justify-between items-start w-full flex-row gap-4">
+          {/* Left column: Title and Summary */}
+          <div className="w-2/3 flex flex-col gap-4">
+            <div className="text-3xl font-bold">
+              {isEditing ? (
+                <Input
+                  value={changelog.title}
+                  onChange={(e) =>
+                    handleUpdate({
+                      ...changelog,
+                      title: e.target.value,
+                    })
+                  }
+                  className="text-2xl"
+                  placeholder="Changelog Title"
+                />
+              ) : (
+                <h2>{changelog.title}</h2>
+              )}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {isEditing ? (
+                <Textarea
+                  value={changelog.summary}
+                  onChange={(e) =>
+                    handleUpdate({
+                      ...changelog,
+                      summary: e.target.value,
+                    })
+                  }
+                  className="w-full"
+                  placeholder="Changelog Summary"
+                />
+              ) : (
+                <p className="whitespace-pre-wrap">{changelog.summary}</p>
+              )}
+            </div>
           </div>
+
+          {/* Right column: Edit, Undo, and Publish buttons */}
           {isOwner && (
-            <Button variant="outline" onClick={toggleEditing}>
-              <Edit className="w-4 h-4 mr-2" />
-              {isEditing ? 'View' : 'Edit'}
-            </Button>
+            <div className="w-1/4 flex flex-col space-y-4 items-end">
+              <div className="w-full flex flex-row space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={handleUndo}
+                  disabled={changelogHistory.length <= 1}
+                  className="w-full"
+                >
+                  <Undo2 className="w-4 h-4 mr-2" /> Undo
+                </Button>
+                <Button variant="outline" onClick={toggleEditing} className="w-full">
+                  <Edit className="w-4 h-4 mr-2" />
+                  {isEditing ? 'View' : 'Edit'}
+                </Button>
+              </div>
+              <Button
+                variant="default"
+                className="bg-blue-500 hover:bg-blue-600 w-full"
+                onClick={handleUpdatePublished}
+              >
+                <Globe className="w-4 h-4 mr-2" />
+                {changelog.isPublished ? 'Unpublish' : 'Publish'}
+              </Button>
+            </div>
           )}
         </div>
-        {/* Summary */}
-        <div className="w-full text-sm text-muted-foreground text-center max-w-screen-lg mx-auto">
-          {isEditing ? (
-            <Textarea
-              value={changelog.summary}
-              onChange={(e) =>
-                handleUpdate({
-                  ...changelog,
-                  summary: e.target.value,
-                })
-              }
-              className="w-full"
-              placeholder="Changelog Summary"
-            />
-          ) : (
-            <p className="whitespace-pre-wrap">{changelog.summary}</p>
-          )}
-        </div>
-        {isOwner && (
-          <Button
-            variant="default"
-            className="w-full place-self-center bg-blue-500 hover:bg-blue-600"
-            onClick={handleUpdatePublished}
-          >
-            <Globe className="w-4 h-4 mr-2" />
-            {changelog.isPublished ? 'Unpublish' : 'Publish'}
-          </Button>
-        )}
       </div>
       {/* Entries */}
-      <ScrollArea className={`w-full ${inModal ? 'h-[500px]' : ''}`}>
+      <ScrollArea className={`${inModal ? 'flex-grow' : 'h-full'} flex w-full`}>
         <div className="w-full space-y-4">
           {changelog.entries.map((entry: ChangelogEntryWithPRsAndCommits, index: number) => (
             <Card
               key={entry.id}
-              className="relative w-full hover:shadow-md transition-shadow duration-300 ease-in-out"
+              className="relative w-full hover:shadow-sm hover:border-gray-400 hover:border-2 transition-all duration-300 ease-in-out"
             >
-              <CardHeader className="flex flex-col space-y-2 w-full">
+              <CardHeader className="flex flex-col space-y-4 w-full">
                 <div className="flex flex-row items-center justify-between w-full">
                   {/* Message */}
-                  <CardTitle className="font-bold w-2/3">
+                  <CardTitle className="font-semibold w-3/4">
                     {isEditing ? (
                       <Input
                         value={entry.message}
@@ -335,7 +343,7 @@ export default function Changelog({
               {/* Separator */}
               <Separator className="w-[95%] mx-auto" />
               {/* Entry Details */}
-              <CardContent className="pt-4 space-y-2">
+              <CardContent className="pt-2 space-y-2">
                 {['impact', 'technicalDetails', 'userBenefit'].map((field) => (
                   <div key={field}>
                     {/* Field Label */}

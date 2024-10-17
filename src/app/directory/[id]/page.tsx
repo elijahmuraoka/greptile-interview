@@ -29,7 +29,7 @@ export default function ChangelogPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="w-full py-2 flex flex-col items-center justify-center">
+    <div className="w-full pt-4 flex flex-col items-center justify-center">
       <Changelog
         changelog={changelog}
         isOwner={isOwner}
