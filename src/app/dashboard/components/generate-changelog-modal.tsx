@@ -95,7 +95,7 @@ export default function GenerateChangelogModal({
                 Make changes to your changelog before publishing. For the best
                 editing experience,{' '}
                 <Link
-                    href={`/directory/changelog/${changelog?.id}`}
+                    href={`/directory/${changelog?.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-500 hover:underline hover:text-blue-600 hover:underline-offset-4 duration-150 ease-in-out"
@@ -257,7 +257,7 @@ export default function GenerateChangelogModal({
                             <div className="space-y-4">
                                 <Button className="w-full bg-green-500 hover:bg-green-600 transition-colors">
                                     <Link
-                                        href={`/directory/changelog/${changelog?.id}`}
+                                        href={`/directory/${changelog?.id}`}
                                     >
                                         View Changelog
                                     </Link>
