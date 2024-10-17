@@ -3,24 +3,24 @@ import { OpenAI } from 'openai';
 import { CommitData } from './githubActions';
 
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 export async function generateChangelog(
-    commitData: CommitData[],
-    repositoryName: string
+  commitData: CommitData[],
+  repositoryName: string
 ): Promise<NewChangelogWithEntries> {
-    console.log('Generating changelog using OpenAI');
+  console.log('Generating changelog using OpenAI');
 
-    if (commitData.length === 0) {
-        throw new Error('No recent repository activity found.');
-    }
+  if (commitData.length === 0) {
+    throw new Error('No recent repository activity found.');
+  }
 
-    const prompt = `Generate a detailed, professional changelog for the repository "${repositoryName}" based on the following commit information:
+  const prompt = `Generate a detailed, professional changelog for the repository "${repositoryName}" based on the following commit information:
 
 ${commitData
-    .map(
-        (commit) => `
+  .map(
+    (commit) => `
 - Commit: ${commit.hash}
   Message: ${commit.message}
   Author: ${commit.author}
@@ -28,17 +28,15 @@ ${commitData
   Files changed: ${commit.files.join(', ')}
   Additions: ${commit.additions}, Deletions: ${commit.deletions}
   ${
-      commit.pullRequest
-          ? `Pull Request: #${commit.pullRequest.number} - ${
-                commit.pullRequest.title
-            }
+    commit.pullRequest
+      ? `Pull Request: #${commit.pullRequest.number} - ${commit.pullRequest.title}
   URL: ${commit.pullRequest.url}
   Labels: ${commit.pullRequest.labels.join(', ')}`
-          : 'No associated pull request'
+      : 'No associated pull request'
   }
 `
-    )
-    .join('\n')}
+  )
+  .join('\n')}
 
 Please provide a JSON response with the following structure:
 {
@@ -92,29 +90,29 @@ When generating the changelog, please follow these guidelines:
 
 The goal is to create a changelog that accurately reflects the provided commit data, serving as a valuable resource for both developers and end-users.`;
 
-    try {
-        const response = await openai.chat.completions.create({
-            model: 'gpt-3.5-turbo-16k',
-            messages: [
-                {
-                    role: 'system',
-                    content:
-                        'You are a helpful assistant that generates detailed and professional changelogs in JSON format. Do not make up any information. Only generate content that is based on the provided commit data.',
-                },
-                { role: 'user', content: prompt },
-            ],
-            temperature: 0.7,
-        });
+  try {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo-16k',
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are a helpful assistant that generates detailed and professional changelogs in JSON format. Do not make up any information. Only generate content that is based on the provided commit data.',
+        },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.7,
+    });
 
-        const content = response.choices[0].message?.content;
-        if (!content) {
-            throw new Error('No content received from OpenAI');
-        }
-
-        const changelogContent: NewChangelogWithEntries = JSON.parse(content);
-        return changelogContent;
-    } catch (error) {
-        console.error('Error generating changelog:', error);
-        throw error;
+    const content = response.choices[0].message?.content;
+    if (!content) {
+      throw new Error('No content received from OpenAI');
     }
+
+    const changelogContent: NewChangelogWithEntries = JSON.parse(content);
+    return changelogContent;
+  } catch (error) {
+    console.error('Error generating changelog:', error);
+    throw error;
+  }
 }
