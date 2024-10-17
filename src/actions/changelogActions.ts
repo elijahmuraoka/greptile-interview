@@ -5,6 +5,7 @@ import {
   getAllChangelogs,
   getChangelogsByUserId,
   getChangelogWithEntriesByChangelogId,
+  deleteChangelog,
 } from '@/db/queries';
 import { getCommitsByRepo } from './githubActions';
 import { generateChangelog } from './openAIActions';
@@ -29,6 +30,11 @@ export async function getChangelogWithEntriesByChangelogIdAction(
 
 export async function getAllChangelogsAction() {
   return await getAllChangelogs();
+}
+
+export async function deleteChangelogAction(id: string) {
+  console.log('Deleting changelog with id: ', id);
+  return await deleteChangelog(id);
 }
 
 export async function generateAndSaveChangelog(

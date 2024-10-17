@@ -101,7 +101,7 @@ export default function DashboardGrid({ userId }: DashboardGridProps) {
               ))}
             </div>
           ) : (
-            <MyChangelogs changelogs={userChangelogs} />
+            <MyChangelogs changelogs={userChangelogs} triggerUpdate={triggerUpdate} />
           )}
         </CardContent>
       </Card>

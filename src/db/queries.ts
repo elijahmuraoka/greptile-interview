@@ -1,3 +1,5 @@
+'use server';
+
 import { db } from './index';
 import {
   users,
@@ -25,6 +27,11 @@ export async function createUser(data: typeof users.$inferInsert) {
 // Changelogs
 export async function getAllChangelogs() {
   return await db.select().from(changelogs);
+}
+
+export async function deleteChangelog(id: string) {
+  await db.delete(changelogs).where(eq(changelogs.id, id));
+  return { success: true, deletedId: id };
 }
 
 export async function createChangelog(
