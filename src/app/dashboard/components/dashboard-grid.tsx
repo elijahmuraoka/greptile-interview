@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { getChangelogsByUserIdAction } from '@/actions/changelogActions';
 import GenerateChangelogModal from './generate-changelog-modal';
-import ChangelogList from './changelog-list';
+import MyChangelogs from './my-changelogs';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface DashboardGridProps {
@@ -117,7 +117,7 @@ export default function DashboardGrid({ userId }: DashboardGridProps) {
                             ))}
                         </div>
                     ) : (
-                        <ChangelogList changelogs={userChangelogs} />
+                        <MyChangelogs changelogs={userChangelogs} />
                     )}
                 </CardContent>
             </Card>

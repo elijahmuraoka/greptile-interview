@@ -4,18 +4,33 @@ import {
     createChangelog,
     getAllChangelogs,
     getChangelogsByUserId,
+    getChangelogWithEntriesByChangelogId,
 } from '@/db/queries';
 import { getCommitsByRepo } from './githubActions';
 import { generateChangelog } from './openAIActions';
 import { auth } from '@/auth';
 import { Repository } from './githubActions';
-import { Changelog, NewChangelogWithEntries } from '@/db/schema';
+import {
+    Changelog,
+    ChangelogWithEntries,
+    NewChangelogWithEntries,
+} from '@/db/schema';
 import { getUserByEmailAction } from './userActions';
 
 export async function getChangelogsByUserIdAction(
     userId: string
 ): Promise<Changelog[]> {
     return await getChangelogsByUserId(userId);
+}
+
+export async function getChangelogWithEntriesByChangelogIdAction(
+    id: string
+): Promise<ChangelogWithEntries> {
+    const result = await getChangelogWithEntriesByChangelogId(id);
+    if (!result) {
+        throw new Error('Changelog not found!');
+    }
+    return result;
 }
 
 export async function getAllChangelogsAction() {
@@ -73,7 +88,7 @@ export async function generateAndSaveChangelog(
 
         // Step 6: Save the changelog to the database
         const savedChangelog = await createChangelog(newChangelog);
-        console.log('Changelog saved');
+        console.log('Changelog saved to database');
 
         return savedChangelog;
     } catch (error) {

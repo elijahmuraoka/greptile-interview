@@ -8,6 +8,7 @@ import {
     ChangelogWithEntries,
     PullRequest,
     commits,
+    ChangelogEntryWithPRsAndCommits,
 } from './schema';
 import { eq, desc } from 'drizzle-orm';
 
@@ -174,9 +175,14 @@ export async function createChangelog(
 
 export async function getChangelogWithEntriesByChangelogId(
     changelogId: string
-) {
-    return await db
-        .select()
+): Promise<ChangelogWithEntries | null> {
+    const results = await db
+        .select({
+            changelog: changelogs,
+            changelog_entry: changelogEntries,
+            pull_request: pullRequests,
+            commit: commits,
+        })
         .from(changelogs)
         .where(eq(changelogs.id, changelogId))
         .leftJoin(
@@ -188,6 +194,36 @@ export async function getChangelogWithEntriesByChangelogId(
             eq(changelogEntries.id, pullRequests.changelogEntryId)
         )
         .leftJoin(commits, eq(changelogEntries.id, commits.changelogEntryId));
+
+    if (results.length === 0) return null;
+
+    const changelog = results[0].changelog;
+    const entries = results.reduce<
+        Record<string, ChangelogEntryWithPRsAndCommits>
+    >((acc, row) => {
+        if (row.changelog_entry) {
+            const entryId = row.changelog_entry.id;
+            if (!acc[entryId]) {
+                acc[entryId] = {
+                    ...row.changelog_entry,
+                    pullRequests: [],
+                    commits: [],
+                };
+            }
+            if (row.pull_request) {
+                acc[entryId].pullRequests.push(row.pull_request);
+            }
+            if (row.commit) {
+                acc[entryId].commits.push(row.commit);
+            }
+        }
+        return acc;
+    }, {});
+
+    return {
+        ...changelog,
+        entries: Object.values(entries),
+    };
 }
 
 export async function getChangelogsByUserId(userId: string) {

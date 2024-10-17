@@ -20,6 +20,7 @@ export const changelogs = pgTable('changelog', {
     id: uuid('id').primaryKey().defaultRandom(),
     title: text('title').notNull(),
     summary: text('summary').notNull(),
+    isPublished: boolean('isPublished').default(false),
     createdAt: timestamp('createdAt').defaultNow().notNull(),
     updatedAt: timestamp('updatedAt').defaultNow().notNull(),
     userId: uuid('userId').notNull(),
@@ -118,16 +119,20 @@ export type NewCommit = typeof commits.$inferInsert;
 export type PullRequest = typeof pullRequests.$inferSelect;
 export type NewPullRequest = typeof pullRequests.$inferInsert;
 
+export type ChangelogEntryWithPRsAndCommits = ChangelogEntry & {
+    pullRequests: PullRequest[];
+    commits: Commit[];
+};
+
+export type NewChangelogEntryWithPRsAndCommits = NewChangelogEntry & {
+    pullRequests: NewPullRequest[];
+    commits: NewCommit[];
+};
+
 export type ChangelogWithEntries = Changelog & {
-    entries: (ChangelogEntry & {
-        pullRequests: PullRequest[];
-        commits: Commit[];
-    })[];
+    entries: ChangelogEntryWithPRsAndCommits[];
 };
 
 export type NewChangelogWithEntries = NewChangelog & {
-    entries: (NewChangelogEntry & {
-        pullRequests: NewPullRequest[];
-        commits: NewCommit[];
-    })[];
+    entries: NewChangelogEntryWithPRsAndCommits[];
 };

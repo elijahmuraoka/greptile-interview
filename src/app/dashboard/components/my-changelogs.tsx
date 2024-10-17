@@ -4,13 +4,18 @@ import { Button } from '@/components/ui/button';
 import { ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
-interface ChangelogListProps {
+interface MyChangelogsProps {
     changelogs: Changelog[];
 }
 
-export default function ChangelogList({ changelogs }: ChangelogListProps) {
+export default function MyChangelogs({ changelogs }: MyChangelogsProps) {
     if (changelogs.length === 0) {
-        return <div>No changelogs found</div>;
+        return (
+            <div>
+                No changelogs found, click "Generate New Changelog" to get
+                started!
+            </div>
+        );
     }
 
     return (
