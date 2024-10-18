@@ -12,7 +12,7 @@ import {
   commits,
   ChangelogEntryWithPRsAndCommits,
 } from './schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and, notInArray, inArray } from 'drizzle-orm';
 
 // Users
 export async function getUserByEmail(email: string) {
@@ -36,6 +36,187 @@ export async function getAllChangelogs() {
 export async function deleteChangelog(id: string) {
   await db.delete(changelogs).where(eq(changelogs.id, id));
   return { success: true, deletedId: id };
+}
+
+export async function updateChangelog(
+  id: string,
+  updatedChangelog: ChangelogWithEntries
+): Promise<ChangelogWithEntries> {
+  return await db.transaction(async (tx) => {
+    console.log('Updating changelog in database...');
+
+    try {
+      // Update the main changelog
+      const [updatedChangelogResult] = await tx
+        .update(changelogs)
+        .set({
+          title: updatedChangelog.title,
+          summary: updatedChangelog.summary,
+          isPublished: updatedChangelog.isPublished,
+          updatedAt: new Date(),
+        })
+        .where(eq(changelogs.id, id))
+        .returning();
+
+      const updatedEntriesWithPRsAndCommits = [];
+
+      for (const entry of updatedChangelog.entries) {
+        let updatedEntry;
+        if (entry.id) {
+          // Update existing entry
+          [updatedEntry] = await tx
+            .update(changelogEntries)
+            .set({
+              message: entry.message,
+              tags: entry.tags,
+              impact: entry.impact,
+              technicalDetails: entry.technicalDetails,
+              userBenefit: entry.userBenefit,
+              breakingChange: entry.breakingChange,
+            })
+            .where(eq(changelogEntries.id, entry.id))
+            .returning();
+        } else {
+          // Insert new entry
+          [updatedEntry] = await tx
+            .insert(changelogEntries)
+            .values({
+              changelogId: id,
+              message: entry.message,
+              tags: entry.tags,
+              impact: entry.impact,
+              technicalDetails: entry.technicalDetails,
+              userBenefit: entry.userBenefit,
+              breakingChange: entry.breakingChange,
+            })
+            .returning();
+        }
+
+        // Update or insert pull requests
+        const updatedPRs = await Promise.all(
+          entry.pullRequests.map(async (pr) => {
+            if (pr.id) {
+              const [updatedPR] = await tx
+                .update(pullRequests)
+                .set({
+                  prNumber: pr.prNumber,
+                  title: pr.title,
+                  url: pr.url,
+                })
+                .where(eq(pullRequests.id, pr.id))
+                .returning();
+              return updatedPR;
+            } else {
+              const [newPR] = await tx
+                .insert(pullRequests)
+                .values({
+                  prNumber: pr.prNumber,
+                  title: pr.title,
+                  url: pr.url,
+                  changelogEntryId: updatedEntry.id,
+                })
+                .returning();
+              return newPR;
+            }
+          })
+        );
+
+        // Update or insert commits
+        const updatedCommits = await Promise.all(
+          entry.commits.map(async (commit) => {
+            if (commit.id) {
+              const [updatedCommit] = await tx
+                .update(commits)
+                .set({
+                  hash: commit.hash,
+                  message: commit.message,
+                  author: commit.author,
+                  date: new Date(commit.date),
+                  pullRequestId: commit.pullRequestId,
+                })
+                .where(eq(commits.id, commit.id))
+                .returning();
+              return updatedCommit;
+            } else {
+              const [newCommit] = await tx
+                .insert(commits)
+                .values({
+                  hash: commit.hash,
+                  message: commit.message,
+                  author: commit.author,
+                  date: new Date(commit.date),
+                  changelogEntryId: updatedEntry.id,
+                  pullRequestId: commit.pullRequestId,
+                })
+                .returning();
+              return newCommit;
+            }
+          })
+        );
+
+        updatedEntriesWithPRsAndCommits.push({
+          ...updatedEntry,
+          pullRequests: updatedPRs,
+          commits: updatedCommits,
+        });
+      }
+
+      // Remove entries that are no longer present
+      const updatedEntryIds = updatedEntriesWithPRsAndCommits.map((e) => e.id);
+      await tx
+        .delete(changelogEntries)
+        .where(
+          and(
+            eq(changelogEntries.changelogId, id),
+            notInArray(changelogEntries.id, updatedEntryIds)
+          )
+        );
+
+      // Get all entry IDs for this changelog
+      const allEntryIds = await tx
+        .select({ id: changelogEntries.id })
+        .from(changelogEntries)
+        .where(eq(changelogEntries.changelogId, id));
+
+      const allEntryIdsArray = allEntryIds.map((entry) => entry.id);
+
+      // Remove PRs that are no longer present in any entry of this changelog
+      const updatedPRIds = updatedEntriesWithPRsAndCommits.flatMap((e) =>
+        e.pullRequests.map((pr) => pr.id)
+      );
+      await tx
+        .delete(pullRequests)
+        .where(
+          and(
+            inArray(pullRequests.changelogEntryId, allEntryIdsArray),
+            notInArray(pullRequests.id, updatedPRIds)
+          )
+        );
+
+      // Remove commits that are no longer present in any entry of this changelog
+      const updatedCommitIds = updatedEntriesWithPRsAndCommits.flatMap((e) =>
+        e.commits.map((c) => c.id)
+      );
+      await tx
+        .delete(commits)
+        .where(
+          and(
+            inArray(commits.changelogEntryId, allEntryIdsArray),
+            notInArray(commits.id, updatedCommitIds)
+          )
+        );
+
+      console.log('All entries updated successfully');
+
+      return {
+        ...updatedChangelogResult,
+        entries: updatedEntriesWithPRsAndCommits,
+      };
+    } catch (error) {
+      console.error('Error in updateChangelog transaction:', error);
+      throw error;
+    }
+  });
 }
 
 export async function createChangelog(

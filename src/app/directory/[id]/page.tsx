@@ -6,7 +6,7 @@ import { getChangelogWithEntriesByChangelogIdAction } from '@/actions/changelogA
 import { useSession } from 'next-auth/react';
 import { ChangelogWithEntries } from '@/db/schema';
 import { getUserByEmailAction } from '@/actions/userActions';
-import { Loader2 } from 'lucide-react';
+import Loading from '@/app/loading';
 import ChangelogProtection from './changelog-protection';
 
 export default function ChangelogPage({ params }: { params: { id: string } }) {
@@ -27,12 +27,7 @@ export default function ChangelogPage({ params }: { params: { id: string } }) {
   }, [params.id, session]);
 
   if (!changelog) {
-    return (
-      <div className="w-full flex flex-row items-center justify-center flex-1 h-full">
-        <p className="text-lg mr-2">Loading changelog from the directory...</p>
-        <Loader2 className="animate-spin" />
-      </div>
-    );
+    return <Loading />;
   }
 
   return (

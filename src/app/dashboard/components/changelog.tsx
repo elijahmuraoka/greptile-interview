@@ -9,7 +9,7 @@ import {
 } from '@/db/schema';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Trash2, Plus, Undo2, Edit, Globe } from 'lucide-react';
+import { ExternalLink, Trash2, Plus, Undo2, Edit, Globe, Save, Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import {
   Accordion,
@@ -24,6 +24,7 @@ import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { updateChangelogAction } from '@/actions/changelogActions';
 
 interface ChangelogProps {
   changelog: ChangelogWithEntries;
@@ -39,6 +40,7 @@ export default function Changelog({
   onChangelogUpdate,
 }: ChangelogProps) {
   const [changelogHistory, setChangelogHistory] = useState<ChangelogWithEntries[]>([changelog]);
+  const [isSaving, setIsSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   const { toast } = useToast();
@@ -47,13 +49,30 @@ export default function Changelog({
     setChangelogHistory([changelog]);
   }, [changelog]);
 
-  const toggleEditing = () => {
-    setIsEditing(!isEditing);
+  const toggleEditing = async () => {
+    try {
+      if (isEditing) {
+        setIsSaving(true);
+        await updateChangelogAction(changelog.id, changelog);
+        setIsSaving(false);
+        toast({
+          description: 'Changelog updates saved successfully!',
+          variant: 'success',
+        });
+      }
+      setIsEditing(!isEditing);
+    } catch (error) {
+      console.error('Error saving changelog updates: ', error);
+      toast({
+        description: 'Error saving changelog updates. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   // Changelog Update Handlers
 
-  const handleUpdate = (updatedChangelog: ChangelogWithEntries) => {
+  const handleUpdate = async (updatedChangelog: ChangelogWithEntries) => {
     onChangelogUpdate(updatedChangelog);
     setChangelogHistory((prev) => [...prev, updatedChangelog]);
   };
@@ -92,7 +111,7 @@ export default function Changelog({
     });
   };
 
-  const handleUpdatePublished = () => {
+  const handleUpdatePublished = async () => {
     const published = !changelog.isPublished;
     if (published) {
       toast({
@@ -105,7 +124,9 @@ export default function Changelog({
         variant: 'success',
       });
     }
-    handleUpdate({ ...changelog, isPublished: published });
+    const updatedChangelog = { ...changelog, isPublished: published };
+    handleUpdate(updatedChangelog);
+    await updateChangelogAction(updatedChangelog.id, updatedChangelog);
   };
 
   // Entry Field Handlers
@@ -234,9 +255,19 @@ export default function Changelog({
                 >
                   <Undo2 className="w-4 h-4 mr-2" /> Undo
                 </Button>
-                <Button variant="outline" onClick={toggleEditing} className="w-full">
-                  <Edit className="w-4 h-4 mr-2" />
-                  {isEditing ? 'View' : 'Edit'}
+                <Button
+                  variant="outline"
+                  onClick={toggleEditing}
+                  className={`w-full ${isEditing ? 'bg-green-200 hover:bg-green-300 border-green-400 border' : ''}`}
+                >
+                  {isSaving ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : isEditing ? (
+                    <Save className="w-4 h-4 mr-2" />
+                  ) : (
+                    <Edit className="w-4 h-4 mr-2" />
+                  )}
+                  {isSaving ? 'Saving...' : isEditing ? 'Save' : 'Edit'}
                 </Button>
               </div>
               <Button
