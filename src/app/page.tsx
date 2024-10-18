@@ -14,7 +14,6 @@ export default async function Home() {
           Intelligent Changelog Automation
         </p>
       </div>
-
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md">
         <Button className="w-full sm:w-auto">
           <Link href="/dashboard">I want to make changelogs</Link>

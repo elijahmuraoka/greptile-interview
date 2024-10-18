@@ -1,22 +1,23 @@
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { getAllChangelogsAction } from '@/actions/changelogActions';
+import DirectorySearchGrid from './components/directory-search-grid';
+import { getUserByIdAction } from '@/actions/userActions';
 
-export default function Directory() {
+export default async function Directory() {
+  const changelogs = await getAllChangelogsAction();
+
+  const changelogsWithUser = await Promise.all(
+    changelogs.map(async (changelog) => {
+      const user = await getUserByIdAction(changelog.userId);
+      return { ...changelog, user };
+    })
+  );
+
   return (
-    <div className="w-full">
-      <h1 className="text-3xl font-bold mb-6">Changelog Directory</h1>
-      <div className="mb-8">
-        <Input type="search" placeholder="Search changelogs..." className="max-w-md" />
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {['React', 'Next.js', 'TailwindCSS', 'TypeScript', 'Node.js', 'Express'].map((project) => (
-          <div key={project} className="border border-border rounded-lg p-4 shadow-sm">
-            <h2 className="text-xl font-semibold mb-2">{project}</h2>
-            <p className="text-muted-foreground mb-4">Latest updates and changes for {project}.</p>
-            <Button variant="outline">View Changelog</Button>
-          </div>
-        ))}
-      </div>
+    <div className="w-full flex flex-col items-center justify-center h-full flex-1 pt-8 space-y-8">
+      <h1 className="text-3xl font-semibold w-full text-center">
+        See Changelogs Made by the Community!
+      </h1>
+      <DirectorySearchGrid changelogs={changelogsWithUser} />
     </div>
   );
 }

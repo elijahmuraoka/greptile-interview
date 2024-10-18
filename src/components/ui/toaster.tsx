@@ -21,11 +21,13 @@ export function Toaster() {
             <div className="grid gap-1">
               {(variant || title) && (
                 <ToastTitle>
-                  {variant == 'success'
-                    ? '🎉 SUCCESS'
-                    : variant == 'destructive'
-                      ? '❌ FAILED'
-                      : title}
+                  {title
+                    ? title
+                    : variant == 'success'
+                      ? '🎉 SUCCESS'
+                      : variant == 'destructive'
+                        ? '❌ FAILED'
+                        : ''}
                 </ToastTitle>
               )}
               {description && <ToastDescription>{description}</ToastDescription>}

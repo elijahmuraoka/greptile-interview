@@ -49,27 +49,30 @@ export default function DashboardGrid({ userId }: DashboardGridProps) {
           <CardTitle>Analytics</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
-          <div className="flex justify-between w-full">
+          <div className="flex justify-between w-full gap-2">
             <span>Total Changelogs:</span>
             <span className="font-semibold">
               {isLoading ? <Skeleton className="w-8 h-6" /> : userChangelogs.length}
             </span>
           </div>
-          <div className="flex justify-between w-full">
-            <span>View Recent Changelog: </span>
-            <span className="font-semibold">
+          <div className="flex justify-between w-full gap-2">
+            <span className="whitespace-nowrap">View Recent Changelog: </span>
+            <span className="font-semibold text-right">
               {isLoading ? (
                 <Skeleton className="w-24 h-6" />
               ) : (
-                <Link href={`/changelog/${lastUpdatedChangelog?.id}`}>
+                <Link
+                  href={`/changelog/${lastUpdatedChangelog?.id}`}
+                  className="text-blue-500 hover:underline hover:text-blue-600 duration-150 transition-all"
+                >
                   {lastUpdatedChangelogTitle}
                 </Link>
               )}
             </span>
           </div>
-          <div className="flex justify-between w-full">
+          <div className="flex justify-between w-full gap-2">
             <span>Last Update: </span>
-            <span className="font-semibold">
+            <span className="font-semibold text-right">
               {isLoading ? <Skeleton className="w-24 h-6" /> : lastUpdate}
             </span>
           </div>

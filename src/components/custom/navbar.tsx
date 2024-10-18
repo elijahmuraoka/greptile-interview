@@ -51,7 +51,6 @@ export default function Navbar() {
           <HoverCardContent className="p-4 w-fit bg-foreground border-border border-2 shadow-lg">
             <div className="flex flex-col gap-2 items-start justify-center w-fit">
               {allPages.map((page) => {
-                if (page === currPage) return null;
                 return navLink(page);
               })}
             </div>

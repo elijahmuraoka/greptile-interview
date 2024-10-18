@@ -6,6 +6,8 @@ import { getChangelogWithEntriesByChangelogIdAction } from '@/actions/changelogA
 import { useSession } from 'next-auth/react';
 import { ChangelogWithEntries } from '@/db/schema';
 import { getUserByEmailAction } from '@/actions/userActions';
+import { Loader2 } from 'lucide-react';
+import ChangelogProtection from './changelog-protection';
 
 export default function ChangelogPage({ params }: { params: { id: string } }) {
   const [changelog, setChangelog] = useState<ChangelogWithEntries | null>(null);
@@ -15,28 +17,32 @@ export default function ChangelogPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     const fetchChangelog = async () => {
       const fetchedChangelog = await getChangelogWithEntriesByChangelogIdAction(params.id);
-      setChangelog(fetchedChangelog);
       if (session?.user?.email) {
         const user = await getUserByEmailAction(session.user.email);
-        setIsOwner(user.id === fetchedChangelog.userId);
+        setIsOwner(user.id == fetchedChangelog.userId);
       }
+      setChangelog(fetchedChangelog);
     };
     fetchChangelog();
   }, [params.id, session]);
 
   if (!changelog) {
-    return <div>Loading...</div>;
+    return (
+      <div className="w-full flex flex-row items-center justify-center flex-1 h-full">
+        <p className="text-lg mr-2">Loading changelog from the directory...</p>
+        <Loader2 className="animate-spin" />
+      </div>
+    );
   }
 
   return (
     <div className="w-full pt-4 flex flex-col items-center justify-center">
+      <ChangelogProtection isOwner={isOwner} isPublished={changelog.isPublished} />
       <Changelog
         changelog={changelog}
         isOwner={isOwner}
         inModal={false}
         onChangelogUpdate={async (updatedChangelog) => {
-          // Implement update logic here
-          // console.log('Updating changelog:', updatedChangelog);
           setChangelog(updatedChangelog);
         }}
       />

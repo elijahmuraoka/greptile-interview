@@ -19,6 +19,10 @@ export async function getUserByEmail(email: string) {
   return await db.select().from(users).where(eq(users.email, email)).limit(1);
 }
 
+export async function getUserById(id: string) {
+  return await db.select().from(users).where(eq(users.id, id)).limit(1);
+}
+
 export async function createUser(data: typeof users.$inferInsert) {
   console.log('Creating user in database: ', data);
   return await db.insert(users).values(data).returning();

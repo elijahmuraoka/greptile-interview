@@ -123,3 +123,7 @@ export type ChangelogWithEntries = Changelog & {
 export type NewChangelogWithEntries = NewChangelog & {
   entries: NewChangelogEntryWithPRsAndCommits[];
 };
+
+export type ChangelogWithUser = Changelog & {
+  user: User;
+};
