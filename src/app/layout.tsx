@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import Navbar from '@/components/custom/navbar';
 import { Providers } from './providers';
 import { Toaster } from '@/components/ui/toaster';
+import MobilePage from '@/components/mobile-page';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -17,9 +18,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className={`${inter.className} flex flex-col min-h-screen mx-auto`}>
         <Providers>
           <Navbar />
-          <main className="mx-auto flex-1 flex flex-col py-16 px-4 sm:px-6 lg:px-8 max-w-7xl w-full">
+          <main className="hidden md:block mx-auto flex-1 flex flex-col py-16 px-4 sm:px-6 lg:px-8 max-w-7xl w-full">
             {children}
           </main>
+          <MobilePage />
           <Toaster />
         </Providers>
       </body>

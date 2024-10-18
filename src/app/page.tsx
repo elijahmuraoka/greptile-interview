@@ -1,5 +1,5 @@
 import Logo from '@/components/custom/logo';
-import { SocialFooter } from '@/components/SocialFooter';
+import { SocialFooter } from '@/components/social-footer';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
