@@ -44,6 +44,7 @@ export default function Changelog({
   onUndo,
 }: ChangelogProps) {
   const [isSaving, setIsSaving] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   const { toast } = useToast();
@@ -54,7 +55,7 @@ export default function Changelog({
         setIsSaving(true);
         await updateChangelogWithEntriesAction(changelog.id, changelog);
         setIsSaving(false);
-        onChangelogUpdate(changelog);
+        handleUpdate(changelog);
         toast({
           description: 'Changelog updates saved successfully!',
           variant: 'success',
@@ -112,21 +113,31 @@ export default function Changelog({
 
   const handleUpdatePublished = async () => {
     const published = !changelog.isPublished;
-    if (published) {
+    try {
+      setIsPublishing(true);
+      const updatedChangelog = { ...changelog, isPublished: published };
+      await updateChangelogWithEntriesAction(updatedChangelog.id, updatedChangelog);
+      handleUpdate(updatedChangelog);
+      if (published) {
+        toast({
+          description: 'Your changelog has been published and is now visible to the public.',
+          variant: 'success',
+        });
+      } else {
+        toast({
+          description: 'Your changelog has been unpublished and is now hidden from the public.',
+          variant: 'success',
+        });
+      }
+    } catch (error) {
+      console.error('Error publishing changelog: ', error);
       toast({
-        description: 'Your changelog has been published and is now visible to the public.',
-        variant: 'success',
+        description: 'Error publishing changelog. Please try again.',
+        variant: 'destructive',
       });
-    } else {
-      toast({
-        description: 'Your changelog has been unpublished and is now hidden from the public.',
-        variant: 'success',
-      });
+    } finally {
+      setIsPublishing(false);
     }
-    const updatedChangelog = { ...changelog, isPublished: published };
-    handleUpdate(updatedChangelog);
-    await updateChangelogWithEntriesAction(updatedChangelog.id, updatedChangelog);
-    onChangelogUpdate(updatedChangelog);
   };
 
   // Entry Field Handlers
@@ -261,6 +272,7 @@ export default function Changelog({
                 <Button
                   variant="outline"
                   onClick={toggleEditing}
+                  disabled={isSaving || isPublishing}
                   className={`w-full ${isEditing ? 'bg-green-200 hover:bg-green-300 border-green-400 border' : ''}`}
                 >
                   {isSaving ? (
@@ -277,9 +289,20 @@ export default function Changelog({
                 variant="default"
                 className="bg-blue-500 hover:bg-blue-600 w-full"
                 onClick={handleUpdatePublished}
+                disabled={isSaving || isPublishing}
               >
-                <Globe className="w-4 h-4 mr-2" />
-                {changelog.isPublished ? 'Unpublish' : 'Publish'}
+                {isPublishing ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Globe className="w-4 h-4 mr-2" />
+                )}
+                {isPublishing
+                  ? !changelog.isPublished
+                    ? 'Publishing...'
+                    : 'Unpublishing...'
+                  : changelog.isPublished
+                    ? 'Unpublish'
+                    : 'Publish'}
               </Button>
             </div>
           )}

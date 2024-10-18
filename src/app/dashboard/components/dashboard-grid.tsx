@@ -62,7 +62,7 @@ export default function DashboardGrid({ userId }: DashboardGridProps) {
                 <Skeleton className="w-24 h-6" />
               ) : (
                 <Link
-                  href={`/changelog/${lastUpdatedChangelog?.id}`}
+                  href={`/directory/${lastUpdatedChangelog?.id}`}
                   className="text-blue-500 hover:underline hover:text-blue-600 duration-150 transition-all"
                 >
                   {lastUpdatedChangelogTitle}
