@@ -38,7 +38,7 @@ export async function deleteChangelog(id: string) {
   return { success: true, deletedId: id };
 }
 
-export async function updateChangelog(
+export async function updateChangelogWithEntries(
   id: string,
   updatedChangelog: ChangelogWithEntries
 ): Promise<ChangelogWithEntries> {

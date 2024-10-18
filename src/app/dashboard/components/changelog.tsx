@@ -24,37 +24,37 @@ import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { updateChangelogAction } from '@/actions/changelogActions';
+import { updateChangelogWithEntriesAction } from '@/actions/changelogActions';
 
 interface ChangelogProps {
   changelog: ChangelogWithEntries;
+  changelogHistory: ChangelogWithEntries[];
   isOwner: boolean;
   inModal: boolean;
   onChangelogUpdate: (updatedChangelog: ChangelogWithEntries) => void;
+  onUndo: () => void;
 }
 
 export default function Changelog({
   changelog,
+  changelogHistory,
   isOwner,
   inModal,
   onChangelogUpdate,
+  onUndo,
 }: ChangelogProps) {
-  const [changelogHistory, setChangelogHistory] = useState<ChangelogWithEntries[]>([changelog]);
   const [isSaving, setIsSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   const { toast } = useToast();
 
-  useEffect(() => {
-    setChangelogHistory([changelog]);
-  }, [changelog]);
-
   const toggleEditing = async () => {
     try {
       if (isEditing) {
         setIsSaving(true);
-        await updateChangelogAction(changelog.id, changelog);
+        await updateChangelogWithEntriesAction(changelog.id, changelog);
         setIsSaving(false);
+        onChangelogUpdate(changelog);
         toast({
           description: 'Changelog updates saved successfully!',
           variant: 'success',
@@ -74,7 +74,6 @@ export default function Changelog({
 
   const handleUpdate = async (updatedChangelog: ChangelogWithEntries) => {
     onChangelogUpdate(updatedChangelog);
-    setChangelogHistory((prev) => [...prev, updatedChangelog]);
   };
 
   const handleAddEntry = () => {
@@ -126,7 +125,8 @@ export default function Changelog({
     }
     const updatedChangelog = { ...changelog, isPublished: published };
     handleUpdate(updatedChangelog);
-    await updateChangelogAction(updatedChangelog.id, updatedChangelog);
+    await updateChangelogWithEntriesAction(updatedChangelog.id, updatedChangelog);
+    onChangelogUpdate(updatedChangelog);
   };
 
   // Entry Field Handlers
@@ -184,13 +184,16 @@ export default function Changelog({
     handleEntryUpdate(entryIndex, { pullRequests: updatedPRs });
   };
 
-  const handleUndo = () => {
-    // if (changelogHistory.length > 1) {
-    //     const previousChangelog = changelogHistory[changelogHistory.length - 2];
-    //     setEditedChangelog(previousChangelog);
-    //     setChangelogHistory(prev => prev.slice(0, -1));
-    //     onChangelogUpdate?.(previousChangelog);
-    // }
+  const handleUndo = async () => {
+    try {
+      onUndo();
+    } catch (error) {
+      console.error('Error undoing changes to changelog: ', error);
+      toast({
+        description: 'Error undoing changes to changelog. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -250,7 +253,7 @@ export default function Changelog({
                 <Button
                   variant="outline"
                   onClick={handleUndo}
-                  disabled={changelogHistory.length <= 1}
+                  disabled={changelogHistory.length <= 1 || isSaving || !isEditing}
                   className="w-full"
                 >
                   <Undo2 className="w-4 h-4 mr-2" /> Undo
