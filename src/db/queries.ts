@@ -10,6 +10,7 @@ import {
   ChangelogWithEntries,
   PullRequest,
   commits,
+  ChangelogEntry,
   ChangelogEntryWithPRsAndCommits,
 } from './schema';
 import { eq, desc, and, notInArray, inArray } from 'drizzle-orm';
@@ -61,7 +62,7 @@ export async function updateChangelogWithEntries(
       const updatedEntriesWithPRsAndCommits = [];
 
       for (const entry of updatedChangelog.entries) {
-        let updatedEntry;
+        let updatedEntry: ChangelogEntry;
         if (entry.id) {
           // Update existing entry
           [updatedEntry] = await tx

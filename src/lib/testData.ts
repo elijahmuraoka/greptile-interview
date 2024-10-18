@@ -8,6 +8,7 @@ export const fakeChangelog: ChangelogWithEntries = {
   updatedAt: new Date('2023-05-15T10:00:00Z'),
   userId: '98765432-e89b-12d3-a456-426614174000',
   repositoryName: 'my-awesome-project',
+  isPublished: true,
   entries: [
     {
       id: 'abcdef12-3456-7890-abcd-ef1234567890',
