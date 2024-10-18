@@ -180,11 +180,13 @@ export default function GenerateChangelogModal({
           <div className="flex flex-col items-center justify-center h-full gap-8 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg shadow-inner">
             <Rocket className="w-16 h-16 text-blue-500 animate-bounce" />
             <div className="w-full max-w-lg space-y-4">
+              <h3 className="text-lg font-semibold">Choose a Repository</h3>
               <RepositorySearch
                 repositories={repositories}
                 selectedRepository={selectedRepository}
                 setSelectedRepository={setSelectedRepository}
               />
+              <h3 className="text-lg font-semibold">Choose a Timeframe</h3>
               <TimeframeInput timeframe={timeframe} setTimeframe={setTimeframe} />
               <Button
                 onClick={handleGenerateChangelog}
@@ -193,8 +195,8 @@ export default function GenerateChangelogModal({
               >
                 {isGeneratingChangelog ? (
                   <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Generating...
-                    <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                   </>
                 ) : (
                   'Generate Changelog'
