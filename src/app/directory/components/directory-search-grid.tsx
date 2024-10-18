@@ -54,7 +54,7 @@ export default function DirectorySearchGrid({ changelogs }: DirectorySearchGridP
         {filteredChangelogs.length > 0 ? (
           filteredChangelogs.map((changelog) => (
             <Card
-              className="hover:shadow-md hover:border-gray-400 transition-all duration-200 ease-in-out space-y-0"
+              className="hover:shadow-md hover:border-gray-400 transition-all duration-200 ease-in-out flex flex-col h-full"
               key={changelog.id}
             >
               <CardHeader className="p-y-0">
@@ -67,7 +67,7 @@ export default function DirectorySearchGrid({ changelogs }: DirectorySearchGridP
                   </p>
                 </CardDescription>
               </CardHeader>
-              <CardContent className="flex flex-col items-start justify-center gap-2 text-foreground/80">
+              <CardContent className="flex flex-col items-start justify-center gap-2 text-foreground/80 flex-grow">
                 <span className="text-sm">
                   Last updated:{' '}
                   <span className="font-semibold">{changelog?.updatedAt.toLocaleDateString()}</span>
@@ -79,7 +79,7 @@ export default function DirectorySearchGrid({ changelogs }: DirectorySearchGridP
                   </span>
                 </span>
               </CardContent>
-              <CardFooter className="justify-end items-end">
+              <CardFooter className="mt-auto flex justify-end">
                 <Link href={`/directory/${changelog.id}`} key={changelog.id}>
                   <Button variant="outline">View Changelog</Button>
                 </Link>
