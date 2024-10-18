@@ -8,8 +8,8 @@ import MobilePage from '@/components/mobile-page';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'RepoLog AI',
-  description: 'Generate changelogs effortlessly with AI',
+  title: 'RepLog AI',
+  description: 'Import your repository and generate changelogs effortlessly with AI.',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
