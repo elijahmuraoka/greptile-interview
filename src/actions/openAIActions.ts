@@ -109,6 +109,8 @@ The goal is to create a changelog that accurately reflects the provided commit d
       throw new Error('No content received from OpenAI');
     }
 
+    console.log('Initial openai generated content: ', content);
+
     const changelogContent: NewChangelogWithEntries = JSON.parse(content);
     return changelogContent;
   } catch (error) {
