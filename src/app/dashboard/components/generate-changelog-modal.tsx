@@ -56,6 +56,7 @@ export default function GenerateChangelogModal({
 }: GenerateChangelogModalProps) {
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [changelog, setChangelog] = useState<ChangelogWithEntries | null>(null);
+  const [changelogHistory, setChangelogHistory] = useState<ChangelogWithEntries[]>([]);
   const [selectedRepository, setSelectedRepository] = useState<Repository | null>(null);
   const [isGeneratingChangelog, setIsGeneratingChangelog] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
@@ -67,7 +68,6 @@ export default function GenerateChangelogModal({
     unit: 'days',
     value: 7,
   });
-  const [changelogHistory, setChangelogHistory] = useState<ChangelogWithEntries[]>([]);
 
   const { toast } = useToast();
 
@@ -121,12 +121,12 @@ export default function GenerateChangelogModal({
     try {
       const changelog = await generateAndSaveChangelog(selectedRepository, timeframe);
       setChangelog(changelog);
+      setChangelogHistory([changelog]);
       toast({
         description: 'Changelog generated successfully.',
         variant: 'success',
       });
       handleNext();
-      setChangelogHistory([changelog]);
     } catch (error) {
       console.error('Error generating changelog: ', error);
       toast({
@@ -162,6 +162,15 @@ export default function GenerateChangelogModal({
 
   const handleChangelogUpdate = (updatedChangelog: ChangelogWithEntries) => {
     setChangelog(updatedChangelog);
+    setChangelogHistory((prev) => [...prev, updatedChangelog]);
+  };
+
+  const handleUndo = async () => {
+    if (changelogHistory.length > 1) {
+      const previousChangelog = changelogHistory[changelogHistory.length - 2];
+      setChangelogHistory((prev) => prev.slice(0, -1));
+      setChangelog(previousChangelog);
+    }
   };
 
   const renderStepContent = (step: number) => {
@@ -202,7 +211,9 @@ export default function GenerateChangelogModal({
                 isOwner={true}
                 inModal={true}
                 changelog={changelog}
+                changelogHistory={changelogHistory}
                 onChangelogUpdate={handleChangelogUpdate}
+                onUndo={handleUndo}
               />
             )}
           </div>
