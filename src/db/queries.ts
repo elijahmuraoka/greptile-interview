@@ -69,6 +69,7 @@ export async function updateChangelogWithEntries(
             .update(changelogEntries)
             .set({
               message: entry.message,
+              date: entry.date,
               tags: entry.tags,
               impact: entry.impact,
               technicalDetails: entry.technicalDetails,
@@ -84,6 +85,7 @@ export async function updateChangelogWithEntries(
             .values({
               changelogId: id,
               message: entry.message,
+              date: entry.date,
               tags: entry.tags,
               impact: entry.impact,
               technicalDetails: entry.technicalDetails,
@@ -181,9 +183,10 @@ export async function updateChangelogWithEntries(
 
       const allEntryIdsArray = allEntryIds.map((entry) => entry.id);
 
+      console.log(updatedEntriesWithPRsAndCommits);
       // Remove PRs that are no longer present in any entry of this changelog
       const updatedPRIds = updatedEntriesWithPRsAndCommits.flatMap((e) =>
-        e.pullRequests.map((pr) => pr.id)
+        e.pullRequests ? e.pullRequests.map((pr) => pr.id) : []
       );
       await tx
         .delete(pullRequests)
@@ -259,6 +262,7 @@ export async function createChangelog(
             .values({
               changelogId: insertedChangelog.id,
               message: entry.message,
+              date: new Date(entry.date),
               tags: entry.tags,
               impact: entry.impact,
               technicalDetails: entry.technicalDetails,

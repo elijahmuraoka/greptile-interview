@@ -26,6 +26,7 @@ export const changelogEntries = pgTable('changelog_entry', {
     .notNull()
     .references(() => changelogs.id, { onDelete: 'cascade' }),
   message: text('message').notNull(),
+  date: timestamp('date').notNull(),
   tags: text('tags').array(),
   impact: text('impact'),
   technicalDetails: text('technicalDetails'),
@@ -101,7 +102,7 @@ export type ChangelogEntry = typeof changelogEntries.$inferSelect;
 export type NewChangelogEntry = typeof changelogEntries.$inferInsert;
 
 export type Commit = typeof commits.$inferSelect;
-export type NewCommit = typeof commits.$inferInsert;
+export type NewCommit = Omit<Commit, 'id' | 'changelogEntryId'>;
 
 export type PullRequest = typeof pullRequests.$inferSelect;
 export type NewPullRequest = typeof pullRequests.$inferInsert;
@@ -111,8 +112,8 @@ export type ChangelogEntryWithPRsAndCommits = ChangelogEntry & {
   commits: Commit[];
 };
 
-export type NewChangelogEntryWithPRsAndCommits = NewChangelogEntry & {
-  pullRequests: NewPullRequest[];
+export type NewChangelogEntryWithPRsAndCommits = Omit<ChangelogEntry, 'id'> & {
+  pullRequests: Omit<PullRequest, 'id' | 'changelogEntryId'>[];
   commits: NewCommit[];
 };
 
@@ -120,7 +121,7 @@ export type ChangelogWithEntries = Changelog & {
   entries: ChangelogEntryWithPRsAndCommits[];
 };
 
-export type NewChangelogWithEntries = NewChangelog & {
+export type NewChangelogWithEntries = Omit<Changelog, 'id' | 'createdAt' | 'updatedAt'> & {
   entries: NewChangelogEntryWithPRsAndCommits[];
 };
 

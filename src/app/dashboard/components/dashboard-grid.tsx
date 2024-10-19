@@ -39,7 +39,6 @@ export default function DashboardGrid({ userId }: DashboardGridProps) {
   }, [userId, updateTrigger]);
 
   const lastUpdatedChangelog = userChangelogs[0];
-  const lastUpdatedChangelogTitle = lastUpdatedChangelog?.title ?? 'N/A';
   const lastUpdate = lastUpdatedChangelog?.updatedAt.toLocaleDateString() ?? 'N/A';
 
   return (
@@ -60,13 +59,15 @@ export default function DashboardGrid({ userId }: DashboardGridProps) {
             <span className="font-semibold text-right">
               {isLoading ? (
                 <Skeleton className="w-24 h-6" />
-              ) : (
+              ) : lastUpdatedChangelog ? (
                 <Link
-                  href={`/directory/${lastUpdatedChangelog?.id}`}
+                  href={`/directory/${lastUpdatedChangelog.id}`}
                   className="text-blue-500 hover:underline hover:text-blue-600 duration-150 transition-all"
                 >
-                  {lastUpdatedChangelogTitle}
+                  {lastUpdatedChangelog.title}
                 </Link>
+              ) : (
+                <span>N/A</span>
               )}
             </span>
           </div>

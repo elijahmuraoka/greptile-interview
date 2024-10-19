@@ -13,10 +13,10 @@ export async function generateChangelog(
   console.log('Generating changelog using OpenAI');
 
   if (commitData.length === 0) {
-    throw new Error('No recent repository activity found.');
+    throw new Error('No recent repository activity found in the selected timeframe.');
   }
 
-  const prompt = `Generate a detailed, professional changelog for the repository "${repositoryName}" based on the following commit information:
+  const prompt = `Create a professional human-readable changelog for the repository "${repositoryName}" using the following commit data:
 
 ${commitData
   .map(
@@ -25,7 +25,6 @@ ${commitData
   Message: ${commit.message}
   Author: ${commit.author}
   Date: ${commit.date}
-  Files changed: ${commit.files.join(', ')}
   Additions: ${commit.additions}, Deletions: ${commit.deletions}
   ${
     commit.pullRequest
@@ -38,23 +37,24 @@ ${commitData
   )
   .join('\n')}
 
-Please provide a JSON response with the following structure:
+Provide a JSON response with:
 {
   "title": "Changelog for ${repositoryName}",
-  "summary": "Summarize the most significant changes and their impact in 2-3 concise, informative sentences.",
+  "summary": "Briefly summarize key changes and their impact.",
   "entries": [
     {
-      "message": "A clear, concise description of the change that both developers and end-users can understand",
-      "tags": ["One or more tags from: feature, enhancement, bugfix, performance, documentation, refactor, test, chore, security, breaking"],
-      "impact": "A detailed explanation of how this change affects users or developers, including any action required",
-      "technicalDetails": "Optional field for more in-depth technical information, useful for developers",
-      "userBenefit": "Explanation of how this change benefits end-users in non-technical terms",
+      "message": "Description of the change",
+      "date": "Change date in ISO format",
+      "tags": ["feature", "bugfix", etc.],
+      "impact": "How this change affects users or developers",
+      "technicalDetails": "Optional technical information, useful for developers, but don't include any specific code references. Leave blank if not applicable.",
+      "userBenefit": "Benefits for end-users",
       "breakingChange": true/false,
       "pullRequests": [
         {
           "prNumber": 123,
-          "title": "Title of the PR",
-          "url": "URL of the PR"
+          "title": "PR title",
+          "url": "PR URL"
         }
       ],
       "commits": [
@@ -63,41 +63,35 @@ Please provide a JSON response with the following structure:
           "message": "Commit message",
           "author": "Commit author",
           "date": "Commit date",
-          "pullRequestId": null  // This should be null if not associated with a PR, or the PR's number if it is
+          "pullRequestId": null or PR number
         }
       ],
     }
   ]
 }
 
-When generating the changelog, please follow these guidelines:
-1. Only use information provided in the commit data. Do not invent or hallucinate any additional information.
-2. Organize commits into logical, coherent groups. Each entry should represent a significant change, feature, or fix.
-3. Provide clear, concise descriptions that are understandable to both technical and non-technical audiences.
-4. Use professional language and maintain a consistent tone throughout the changelog.
-5. Highlight important changes, especially new features, major enhancements, and breaking changes.
-6. For breaking changes, clearly explain what has changed and what actions users need to take.
-7. Include relevant technical details for developers, but also explain the impact and benefits for end-users.
-8. If multiple commits or pull requests relate to the same change, combine them into a single, comprehensive entry.
-9. Use the tags to categorize each entry appropriately. You can use multiple tags if applicable.
-10. In the 'impact' field, focus on the practical implications of the change.
-11. Ensure that commits are correctly associated with their pull requests if applicable.
-12. If a change addresses a specific issue or feature request, mention it in the message (e.g., "Fixes #123").
-13. For significant changes, use the 'technicalDetails' field to provide more in-depth information for developers.
-14. Use the 'userBenefit' field to explain how each change improves the product for end-users in non-technical terms.
-15. Only include the 'pullRequests' array if there are actual pull requests associated with the entry. If there are no pull requests, omit this field entirely.
-16. Ensure that all fields in the pullRequests and commits objects have valid values. Do not include null or made-up values.
+Guidelines:
+1. Use only the provided git data.
+2. Group related commits logically into entries.
+3. Write clear, concise descriptions for all audiences.
+4. Highlight new features, enhancements, and breaking changes.
+5. Explain breaking changes and required user actions.
+6. Include technical details for developers and benefits for end-users.
+7. Combine related commits and pull requests into single entries.
+8. Categorize entries with appropriate tags.
+9. Ensure correct association of commits with pull requests.
+10. Mention specific issues or feature requests if applicable.
 
-The goal is to create a changelog that accurately reflects the provided commit data, serving as a valuable resource for both developers and end-users.`;
+The goal is to create an accurate, valuable changelog for developers and end-users.`;
 
   try {
     const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo-16k',
+      model: 'gpt-4o',
       messages: [
         {
           role: 'system',
           content:
-            'You are a helpful assistant that generates detailed and professional changelogs in JSON format. Do not make up any information. Only generate content that is based on the provided commit data.',
+            'You are an expert assistant specialized in generating detailed and professional changelogs in JSON format. Your task is to accurately reflect the provided commit data without inventing or assuming any information. Focus on clarity, precision, and utility for both developers and end-users. Output the JSON data directly without any markdown or additional formatting.',
         },
         { role: 'user', content: prompt },
       ],

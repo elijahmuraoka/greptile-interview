@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   ChangelogWithEntries,
   ChangelogEntry,
   PullRequest,
   ChangelogEntryWithPRsAndCommits,
+  NewChangelogEntryWithPRsAndCommits,
+  NewChangelogWithEntries,
 } from '@/db/schema';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -54,8 +56,7 @@ export default function Changelog({
       if (isEditing) {
         setIsSaving(true);
         await updateChangelogWithEntriesAction(changelog.id, changelog);
-        setIsSaving(false);
-        handleUpdate(changelog);
+        handleChangelogUpdate(changelog);
         toast({
           description: 'Changelog updates saved successfully!',
           variant: 'success',
@@ -68,20 +69,22 @@ export default function Changelog({
         description: 'Error saving changelog updates. Please try again.',
         variant: 'destructive',
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
   // Changelog Update Handlers
 
-  const handleUpdate = async (updatedChangelog: ChangelogWithEntries) => {
+  const handleChangelogUpdate = (updatedChangelog: ChangelogWithEntries) => {
     onChangelogUpdate(updatedChangelog);
   };
 
   const handleAddEntry = () => {
-    const newEntry: ChangelogEntryWithPRsAndCommits = {
-      id: Date.now().toString(),
+    const newEntry: NewChangelogEntryWithPRsAndCommits = {
       changelogId: changelog.id,
       message: '',
+      date: new Date(),
       tags: [],
       impact: null,
       technicalDetails: null,
@@ -90,22 +93,22 @@ export default function Changelog({
       pullRequests: [],
       commits: [],
     };
-    handleUpdate({
+    handleChangelogUpdate({
       ...changelog,
-      entries: [...changelog.entries, newEntry],
+      entries: [...changelog.entries, newEntry as ChangelogEntryWithPRsAndCommits],
     });
   };
 
   const handleRemoveEntry = (index: number) => {
     const updatedEntries = changelog.entries.filter((_, i) => i !== index);
-    handleUpdate({ ...changelog, entries: updatedEntries });
+    handleChangelogUpdate({ ...changelog, entries: updatedEntries });
   };
 
   const handleEntryUpdate = (
     entryIndex: number,
-    updatedEntry: Partial<ChangelogEntryWithPRsAndCommits>
+    updatedEntry: Partial<ChangelogEntryWithPRsAndCommits> | Partial<NewChangelogWithEntries>
   ) => {
-    handleUpdate({
+    handleChangelogUpdate({
       ...changelog,
       entries: changelog.entries.map((e, i) => (i === entryIndex ? { ...e, ...updatedEntry } : e)),
     });
@@ -117,7 +120,7 @@ export default function Changelog({
       setIsPublishing(true);
       const updatedChangelog = { ...changelog, isPublished: published };
       await updateChangelogWithEntriesAction(updatedChangelog.id, updatedChangelog);
-      handleUpdate(updatedChangelog);
+      handleChangelogUpdate(updatedChangelog);
       if (published) {
         toast({
           description: 'Your changelog has been published and is now visible to the public.',
@@ -164,19 +167,29 @@ export default function Changelog({
     handleEntryUpdate(entryIndex, { tags: updatedTags });
   };
 
+  const handleUpdateDate = (entryIndex: number, date: Date) => {
+    handleEntryUpdate(entryIndex, { date });
+  };
+
   const handleAddPullRequest = (entryIndex: number) => {
-    const newPR: PullRequest = {
-      id: Date.now().toString(),
+    const newPR: Omit<PullRequest, 'id' | 'changelogEntryId'> = {
       prNumber: 0,
       title: '',
       url: '',
-      changelogEntryId: changelog.entries[entryIndex].id,
     };
-    const updatedEntry = {
-      ...changelog.entries[entryIndex],
-      pullRequests: [...(changelog.entries[entryIndex].pullRequests || []), newPR],
-    };
-    handleEntryUpdate(entryIndex, updatedEntry);
+    const updatedEntries = changelog.entries.map((entry, index) => {
+      if (index === entryIndex) {
+        return {
+          ...entry,
+          pullRequests: [...entry.pullRequests, newPR as PullRequest],
+        };
+      }
+      return entry;
+    });
+    handleChangelogUpdate({
+      ...changelog,
+      entries: updatedEntries,
+    });
   };
 
   const handleUpdatePullRequest = (
@@ -226,7 +239,7 @@ export default function Changelog({
                 <Input
                   value={changelog.title}
                   onChange={(e) =>
-                    handleUpdate({
+                    handleChangelogUpdate({
                       ...changelog,
                       title: e.target.value,
                     })
@@ -243,7 +256,7 @@ export default function Changelog({
                 <Textarea
                   value={changelog.summary}
                   onChange={(e) =>
-                    handleUpdate({
+                    handleChangelogUpdate({
                       ...changelog,
                       summary: e.target.value,
                     })
@@ -317,7 +330,22 @@ export default function Changelog({
               className="relative w-full hover:shadow-sm hover:border-gray-400 hover:border-2 transition-all duration-300 ease-in-out"
             >
               <CardHeader className="flex flex-col space-y-4 w-full">
-                <div className="flex flex-row items-center justify-between w-full">
+                <div className="flex flex-row items-center justify-start gap-4 w-full">
+                  {/* Date */}
+                  <div
+                    className={`${isEditing ? '' : 'border-2 border-blue-400 bg-blue-200 px-3 py-2'} text-lg font-semibold tracking-wide rounded-md`}
+                  >
+                    {isEditing ? (
+                      <Input
+                        type="date"
+                        value={entry.date ? new Date(entry.date).toISOString().split('T')[0] : ''}
+                        onChange={(e) => handleUpdateDate(index, new Date(e.target.value))}
+                        className=""
+                      />
+                    ) : (
+                      <span>{new Date(entry.date).toLocaleDateString()}</span>
+                    )}
+                  </div>
                   {/* Message */}
                   <CardTitle className="font-semibold w-3/4">
                     {isEditing ? (
@@ -374,7 +402,7 @@ export default function Changelog({
                     <Badge
                       key={tagIndex}
                       variant="secondary"
-                      className="flex items-center space-x-1"
+                      className="flex items-center space-x-1 border-[1px] border-muted-foreground"
                     >
                       <span>{tag}</span>
                       {isEditing && (
