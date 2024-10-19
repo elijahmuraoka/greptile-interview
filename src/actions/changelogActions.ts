@@ -22,6 +22,7 @@ export async function getChangelogsByUserIdAction(userId: string): Promise<Chang
 export async function getChangelogWithEntriesByChangelogIdAction(
   id: string
 ): Promise<ChangelogWithEntries> {
+  console.log('Fetching changelog with id:', id);
   const result = await getChangelogWithEntriesByChangelogId(id);
   if (!result) {
     throw new Error('Changelog not found!');
@@ -42,12 +43,11 @@ export async function updateChangelogWithEntriesAction(
   id: string,
   changelog: ChangelogWithEntries
 ) {
-  // Ensure dates are properly formatted before sending to the database
   const formattedChangelog = {
     ...changelog,
     entries: changelog.entries.map((entry) => ({
       ...entry,
-      date: new Date(entry.date), // Ensure date is a Date object
+      date: new Date(entry.date),
     })),
   };
   return await updateChangelogWithEntries(id, formattedChangelog);

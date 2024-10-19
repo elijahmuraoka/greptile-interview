@@ -58,8 +58,8 @@ export default function Changelog({
     try {
       if (isEditing) {
         setIsSaving(true);
-        await updateChangelogWithEntriesAction(changelog.id, changelog);
-        handleChangelogUpdate(changelog);
+        const updatedChangelog = await updateChangelogWithEntriesAction(changelog.id, changelog);
+        handleChangelogUpdate(updatedChangelog);
         toast({
           description: 'Changelog updates saved successfully!',
           variant: 'success',
@@ -122,8 +122,11 @@ export default function Changelog({
     try {
       setIsPublishing(true);
       const updatedChangelog = { ...changelog, isPublished: published };
-      await updateChangelogWithEntriesAction(updatedChangelog.id, updatedChangelog);
-      handleChangelogUpdate(updatedChangelog);
+      const savedChangelog = await updateChangelogWithEntriesAction(
+        updatedChangelog.id,
+        updatedChangelog
+      );
+      handleChangelogUpdate(savedChangelog);
       if (published) {
         toast({
           description: 'Your changelog has been published and is now visible to the public.',
