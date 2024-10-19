@@ -60,7 +60,7 @@ export async function generateAndSaveChangelog(
     // Step 1: Authenticate user
     console.log('Authenticating user');
     const session = await auth();
-    if (!session?.user?.email) {
+    if (!session?.user) {
       throw new Error('User not authenticated');
     }
     console.log('User authenticated');
