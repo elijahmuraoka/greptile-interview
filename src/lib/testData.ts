@@ -14,6 +14,7 @@ export const fakeChangelog: ChangelogWithEntries = {
       id: 'abcdef12-3456-7890-abcd-ef1234567890',
       changelogId: '123e4567-e89b-12d3-a456-426614174000',
       message: 'Add dark mode support',
+      date: new Date('2023-05-10T14:30:00Z'),
       tags: ['feature', 'enhancement'],
       impact:
         'Users can now switch between light and dark themes for better viewing experience in different lighting conditions.',
@@ -45,6 +46,7 @@ export const fakeChangelog: ChangelogWithEntries = {
       id: 'fedcba98-7654-3210-fedc-ba9876543210',
       changelogId: '123e4567-e89b-12d3-a456-426614174000',
       message: 'Optimize database queries for better performance',
+      date: new Date('2023-05-12T09:15:00Z'),
       tags: ['performance', 'enhancement'],
       impact: 'Significantly reduced load times for data-heavy pages.',
       technicalDetails: 'Implemented database indexing and query caching.',
@@ -75,6 +77,7 @@ export const fakeChangelog: ChangelogWithEntries = {
       id: '11111111-2222-3333-4444-555555555555',
       changelogId: '123e4567-e89b-12d3-a456-426614174000',
       message: 'Update authentication system',
+      date: new Date('2023-05-14T11:45:00Z'),
       tags: ['security', 'breaking'],
       impact: 'Improved security measures for user authentication.',
       technicalDetails: 'Switched to JWT-based authentication and implemented refresh tokens.',
