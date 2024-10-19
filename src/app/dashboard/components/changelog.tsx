@@ -303,7 +303,7 @@ export default function Changelog({
             </div>
           </div>
 
-          {/* Right column: Edit, Undo, and Publish buttons */}
+          {/* Right column: Edit, Undo, Trash, and Publish buttons */}
           {isOwner && (
             <div className="w-1/4 flex flex-col space-y-4 items-end">
               <div className="w-full flex flex-row space-x-2">
@@ -330,7 +330,12 @@ export default function Changelog({
                   )}
                   {isSaving ? 'Saving...' : isEditing ? 'Save' : 'Edit'}
                 </Button>
-                <Button variant="destructive" size="sm" onClick={() => handleDelete(changelog.id)}>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  disabled={isSaving || isPublishing}
+                  onClick={() => handleDelete(changelog.id)}
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -360,6 +365,11 @@ export default function Changelog({
       {/* Entries */}
       <ScrollArea className={`${inModal ? 'flex-grow' : 'h-full'} flex w-full`}>
         <div className="w-full space-y-4">
+          {isEditing && (
+            <Button onClick={handleAddEntry} className="w-full">
+              <Plus className="h-4 w-4 mr-2" /> Add Changelog Entry
+            </Button>
+          )}
           {changelog.entries
             // Sort by date in descending order
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -606,11 +616,6 @@ export default function Changelog({
                 </AccordionItem>
               </Accordion>
             ))}
-          {isEditing && (
-            <Button onClick={handleAddEntry} className="w-full">
-              <Plus className="h-4 w-4 mr-2" /> Add Changelog Entry
-            </Button>
-          )}
         </div>
       </ScrollArea>
     </div>
