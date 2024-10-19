@@ -85,7 +85,7 @@ export default function DashboardGrid({ userId }: DashboardGridProps) {
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <GenerateChangelogModal onChangelogGenerated={triggerUpdate} />
-          <Button variant="outline" asChild className="w-full">
+          <Button variant="outline" className="w-full">
             <Link href="/directory">View Public Directory</Link>
           </Button>
         </CardContent>

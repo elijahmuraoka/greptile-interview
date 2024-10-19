@@ -265,7 +265,7 @@ export default function GenerateChangelogModal({
 
   return (
     <Dialog>
-      <DialogTrigger>
+      <DialogTrigger asChild>
         <Button className="w-full">Generate New Changelog</Button>
       </DialogTrigger>
       <DialogContent className="min-h-[98vh] max-w-[98vw] flex flex-col justify-between gap-6 items-center p-6">

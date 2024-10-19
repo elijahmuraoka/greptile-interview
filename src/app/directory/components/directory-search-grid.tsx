@@ -59,12 +59,10 @@ export default function DirectorySearchGrid({ changelogs }: DirectorySearchGridP
             >
               <CardHeader className="p-y-0">
                 <CardTitle className="text-lg font-semibold">{changelog.title}</CardTitle>
-                <CardDescription>
-                  <p className="text-xs text-muted-foreground">
-                    {changelog.summary.length > 150
-                      ? `${changelog.summary.slice(0, 150)}...`
-                      : changelog.summary}
-                  </p>
+                <CardDescription className="text-xs text-muted-foreground">
+                  {changelog.summary.length > 150
+                    ? `${changelog.summary.slice(0, 150)}...`
+                    : changelog.summary}
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col items-start justify-center gap-2 text-foreground/80 flex-grow">
