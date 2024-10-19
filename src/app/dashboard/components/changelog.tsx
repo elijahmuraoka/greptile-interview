@@ -26,10 +26,14 @@ import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { updateChangelogWithEntriesAction } from '@/actions/changelogActions';
+import {
+  deleteChangelogAction,
+  updateChangelogWithEntriesAction,
+} from '@/actions/changelogActions';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { toZonedTime, fromZonedTime } from 'date-fns-tz';
+import { useRouter } from 'next/navigation';
 
 interface ChangelogProps {
   changelog: ChangelogWithEntries;
@@ -51,7 +55,7 @@ export default function Changelog({
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-
+  const router = useRouter();
   const { toast } = useToast();
 
   const toggleEditing = async () => {
@@ -78,6 +82,25 @@ export default function Changelog({
   };
 
   // Changelog Update Handlers
+
+  const handleDelete = async (changelogId: string) => {
+    if (window.confirm('Are you sure you want to delete this changelog?')) {
+      try {
+        await deleteChangelogAction(changelogId);
+        toast({
+          description: 'The changelog has been successfully deleted.',
+          variant: 'success',
+        });
+        router.push('/dashboard');
+      } catch (error) {
+        console.error('Error deleting changelog: ', error);
+        toast({
+          description: 'There was an error deleting the changelog.',
+          variant: 'destructive',
+        });
+      }
+    }
+  };
 
   const handleChangelogUpdate = (updatedChangelog: ChangelogWithEntries) => {
     onChangelogUpdate(updatedChangelog);
@@ -306,6 +329,9 @@ export default function Changelog({
                     <Edit className="w-4 h-4 mr-2" />
                   )}
                   {isSaving ? 'Saving...' : isEditing ? 'Save' : 'Edit'}
+                </Button>
+                <Button variant="destructive" size="sm" onClick={() => handleDelete(changelog.id)}>
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
               <Button
