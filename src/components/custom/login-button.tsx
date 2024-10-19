@@ -5,7 +5,7 @@ import { FaGithub } from 'react-icons/fa';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { createUserAction, getUserByEmailAction } from '@/actions/userActions';
+import { createUserAction, getUserByUsernameAction } from '@/actions/userActions';
 
 interface LoginButtonProps {
   buttonProps?: ButtonProps;
@@ -22,14 +22,17 @@ export function LoginButton({ buttonProps, callbackUrl }: LoginButtonProps) {
   useEffect(() => {
     const createUserInDatabase = async () => {
       try {
-        const existingUser = await getUserByEmailAction(session?.user?.email!);
+        const existingUser = await getUserByUsernameAction(session?.user?.username!);
 
         if (!existingUser) {
           await createUserAction({
+            id: String(session?.user?.id)!,
             name: session?.user?.name!,
+            username: session?.user?.username!,
             email: session?.user?.email!,
             emailVerified: new Date(),
             image: session?.user?.image!,
+            html_url: session?.user?.html_url!,
           });
         }
       } catch (error) {

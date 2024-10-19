@@ -5,7 +5,6 @@ import Changelog from '@/app/dashboard/components/changelog';
 import { getChangelogWithEntriesByChangelogIdAction } from '@/actions/changelogActions';
 import { useSession } from 'next-auth/react';
 import { ChangelogWithEntries } from '@/db/schema';
-import { getUserByEmailAction } from '@/actions/userActions';
 import Loading from '@/app/loading';
 import ChangelogProtection from './changelog-protection';
 
@@ -18,10 +17,7 @@ export default function ChangelogPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     const fetchChangelog = async () => {
       const fetchedChangelog = await getChangelogWithEntriesByChangelogIdAction(params.id);
-      if (session?.user?.email) {
-        const user = await getUserByEmailAction(session.user.email);
-        setIsOwner(user.id == fetchedChangelog.userId);
-      }
+      setIsOwner(session?.user.id == fetchedChangelog.userId);
       setChangelog(fetchedChangelog);
       setChangelogHistory([fetchedChangelog]);
     };

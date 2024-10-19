@@ -232,7 +232,7 @@ export default function Changelog({
 
   return (
     <div
-      className={`${!inModal ? 'w-[90vw]' : 'w-full'} flex flex-col gap-4 bg-transparent mx-auto h-full flex-shrink-0`}
+      className={`${!inModal ? ' max-w-[90vw]' : ''} w-full flex flex-col gap-4 bg-transparent mx-auto h-full flex-shrink-0`}
     >
       {/* Navbar - [Undo, Title, Edit] + Summary */}
       <div

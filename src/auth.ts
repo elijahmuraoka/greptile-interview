@@ -26,11 +26,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async session({ session, token }) {
       session.accessToken = token.accessToken as string;
+      session.user.id = token.id as string;
+      session.user.name = token.name as string;
+      session.user.username = token.username as string;
+      session.user.email = token.email as string;
+      session.user.image = token.image as string;
+      session.user.html_url = token.html_url as string;
       return session;
     },
-    async jwt({ token, account }) {
+    async jwt({ token, account, user, profile }) {
       if (account) {
         token.accessToken = account.access_token;
+      }
+      if (user) {
+        token.name = user.name;
+        token.email = user.email;
+        token.image = user.image;
+      }
+      if (profile) {
+        token.id = profile.id;
+        token.username = profile.login;
+        token.html_url = profile.html_url;
       }
       return token;
     },

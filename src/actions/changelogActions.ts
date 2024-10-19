@@ -13,7 +13,6 @@ import { generateChangelog } from './openAIActions';
 import { auth } from '@/auth';
 import { Repository } from './githubActions';
 import { Changelog, ChangelogWithEntries, NewChangelogWithEntries } from '@/db/schema';
-import { getUserByEmailAction } from './userActions';
 
 export async function getChangelogsByUserIdAction(userId: string): Promise<Changelog[]> {
   return await getChangelogsByUserId(userId);
@@ -82,12 +81,9 @@ export async function generateAndSaveChangelog(
     const changelogData = await generateChangelog(commitData, repository.name);
 
     // Step 5: Prepare the changelog data for saving
-
-    const user = await getUserByEmailAction(session.user.email);
-
     const newChangelog: NewChangelogWithEntries = {
       ...changelogData,
-      userId: user.id,
+      userId: session.user.id,
       repositoryName: repository.name,
     };
 

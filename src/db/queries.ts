@@ -16,11 +16,12 @@ import {
 import { eq, desc, and, notInArray, inArray } from 'drizzle-orm';
 
 // Users
-export async function getUserByEmail(email: string) {
-  return await db.select().from(users).where(eq(users.email, email)).limit(1);
+export async function getUserByUsername(username: string) {
+  return await db.select().from(users).where(eq(users.username, username)).limit(1);
 }
 
 export async function getUserById(id: string) {
+  console.log('Getting user by id: ', id);
   return await db.select().from(users).where(eq(users.id, id)).limit(1);
 }
 
@@ -194,15 +195,13 @@ export async function createChangelog(
   newChangeLogWithEntries: NewChangelogWithEntries
 ): Promise<ChangelogWithEntries> {
   return await db.transaction(async (tx) => {
-    console.log('Beginning database transaction');
+    console.log('Beginning database transaction to insert changelog.');
 
     try {
       const [insertedChangelog] = await tx
         .insert(changelogs)
         .values(newChangeLogWithEntries)
         .returning();
-
-      console.log('Inserted changelog:', insertedChangelog);
 
       // Verify changelog insertion
       const verifyChangelog = await tx
@@ -222,7 +221,6 @@ export async function createChangelog(
       for (let index = 0; index < newChangeLogWithEntries.entries.length; index++) {
         try {
           const entry = newChangeLogWithEntries.entries[index];
-          console.log(`Processing entry ${index + 1}`);
 
           const [insertedEntry] = await tx
             .insert(changelogEntries)
@@ -238,13 +236,8 @@ export async function createChangelog(
             })
             .returning();
 
-          console.log(`Inserted changelog entry ${index + 1}:`, insertedEntry);
-
           let insertedPRs: PullRequest[] = [];
           if (entry.pullRequests && entry.pullRequests.length > 0) {
-            console.log(
-              `Inserting ${entry.pullRequests.length} pull requests for entry ${index + 1}`
-            );
             insertedPRs = await tx
               .insert(pullRequests)
               .values(
@@ -256,10 +249,7 @@ export async function createChangelog(
                 }))
               )
               .returning();
-            console.log(`Inserted pull requests for entry ${index + 1}:`, insertedPRs);
           }
-
-          console.log(`Inserting ${entry.commits.length} commits for entry ${index + 1}`);
 
           const prMap = new Map(insertedPRs.map((pr) => [pr.prNumber, pr.id]));
 
@@ -277,10 +267,6 @@ export async function createChangelog(
                 pullRequestId: prMap.get(Number(commit.pullRequestId)),
               })
               .returning();
-            console.log(
-              `Inserted commit ${commitIndex + 1} for entry ${index + 1}:`,
-              insertedCommit
-            );
             insertedCommits.push(insertedCommit);
           }
 

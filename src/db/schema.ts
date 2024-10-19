@@ -2,11 +2,13 @@ import { timestamp, pgTable, text, integer, boolean, uuid } from 'drizzle-orm/pg
 import { relations } from 'drizzle-orm';
 
 export const users = pgTable('user', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: text('id').primaryKey(),
+  username: text('username').unique().notNull(),
   name: text('name'),
   email: text('email').unique(),
   emailVerified: timestamp('emailVerified', { mode: 'date' }),
   image: text('image'),
+  html_url: text('html_url').notNull(),
 });
 
 export const changelogs = pgTable('changelog', {
@@ -16,7 +18,7 @@ export const changelogs = pgTable('changelog', {
   isPublished: boolean('isPublished').default(false),
   createdAt: timestamp('createdAt').defaultNow().notNull(),
   updatedAt: timestamp('updatedAt').defaultNow().notNull(),
-  userId: uuid('userId').notNull(),
+  userId: text('userId').notNull(),
   repositoryName: text('repositoryName').notNull(),
 });
 
