@@ -21,7 +21,6 @@ export async function getUserByUsername(username: string) {
 }
 
 export async function getUserById(id: string) {
-  console.log('Getting user by id: ', id);
   return await db.select().from(users).where(eq(users.id, id)).limit(1);
 }
 

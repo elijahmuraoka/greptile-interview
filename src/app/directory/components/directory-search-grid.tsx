@@ -50,7 +50,7 @@ export default function DirectorySearchGrid({ changelogs }: DirectorySearchGridP
         />
       </div>
       {/* Directory Search Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 min-w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 min-w-full h-full">
         {filteredChangelogs.length > 0 ? (
           filteredChangelogs.map((changelog) => (
             <Card
@@ -72,9 +72,12 @@ export default function DirectorySearchGrid({ changelogs }: DirectorySearchGridP
                 </span>
                 <span className="text-sm ">
                   Created by:{' '}
-                  <span className="font-semibold">
-                    {changelog?.user?.name || changelog?.user?.email}
-                  </span>
+                  <Link
+                    href={changelog.user.html_url}
+                    className="font-semibold hover:text-blue-600 text-blue-500 transition-all duration-200"
+                  >
+                    {`@${changelog.user.username}`}
+                  </Link>
                 </span>
               </CardContent>
               <CardFooter className="mt-auto flex justify-end">
