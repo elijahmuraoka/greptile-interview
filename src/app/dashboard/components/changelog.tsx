@@ -353,7 +353,7 @@ export default function Changelog({
                                 : ''
                             }
                             onChange={(e) => handleUpdateDate(index, e.target.value)}
-                            className="w- [&::-webkit-calendar-picker-indicator]:ml-[-1.25rem]"
+                            className="w-32 [&::-webkit-calendar-picker-indicator]:ml-[-1.25rem]"
                             style={{ zIndex: 10 }}
                           />
                         ) : (
