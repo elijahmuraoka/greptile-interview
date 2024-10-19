@@ -27,6 +27,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { updateChangelogWithEntriesAction } from '@/actions/changelogActions';
+import { format, parseISO } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { toZonedTime, fromZonedTime } from 'date-fns-tz';
 
 interface ChangelogProps {
   changelog: ChangelogWithEntries;
@@ -167,8 +170,12 @@ export default function Changelog({
     handleEntryUpdate(entryIndex, { tags: updatedTags });
   };
 
-  const handleUpdateDate = (entryIndex: number, date: Date) => {
-    handleEntryUpdate(entryIndex, { date });
+  const handleUpdateDate = (entryIndex: number, dateString: string) => {
+    // Convert the local date string to a UTC Date object
+    const localDate = parseISO(dateString);
+    const utcDate = fromZonedTime(localDate, 'UTC');
+
+    handleEntryUpdate(entryIndex, { date: utcDate });
   };
 
   const handleAddPullRequest = (entryIndex: number) => {
@@ -325,219 +332,243 @@ export default function Changelog({
       <ScrollArea className={`${inModal ? 'flex-grow' : 'h-full'} flex w-full`}>
         <div className="w-full space-y-4">
           {changelog.entries.map((entry: ChangelogEntryWithPRsAndCommits, index: number) => (
-            <Card
-              key={entry.id}
-              className="relative w-full hover:shadow-sm hover:border-gray-400 hover:border-2 transition-all duration-300 ease-in-out"
-            >
-              <CardHeader className="flex flex-col space-y-4 w-full">
-                <div className="flex flex-row items-center justify-start gap-4 w-full">
-                  {/* Date */}
-                  <div
-                    className={`${isEditing ? '' : 'border-2 border-blue-400 bg-blue-200 px-3 py-2'} text-lg font-semibold tracking-wide rounded-md`}
-                  >
-                    {isEditing ? (
-                      <Input
-                        type="date"
-                        value={entry.date ? new Date(entry.date).toISOString().split('T')[0] : ''}
-                        onChange={(e) => handleUpdateDate(index, new Date(e.target.value))}
-                        className=""
-                      />
-                    ) : (
-                      <span>{new Date(entry.date).toLocaleDateString()}</span>
-                    )}
-                  </div>
-                  {/* Message */}
-                  <CardTitle className="font-semibold w-3/4">
-                    {isEditing ? (
-                      <Input
-                        value={entry.message}
-                        onChange={(e) =>
-                          handleEntryUpdate(index, {
-                            message: e.target.value,
-                          })
-                        }
-                        className="w-full text-lg"
-                      />
-                    ) : (
-                      <span className="w-full">{entry.message}</span>
-                    )}
-                  </CardTitle>
-                  {/* Breaking Change */}
-                  {isEditing ? (
-                    <div className="flex items-center space-x-2 justify-center">
-                      <Switch
-                        checked={entry.breakingChange ?? false}
-                        onCheckedChange={(checked) => handleUpdateBreakingChange(index, checked)}
-                        id={`breaking-change-${entry.id}`}
-                      />
-                      <Label
-                        htmlFor={`breaking-change-${entry.id}`}
-                        className="text-sm whitespace-nowrap"
+            <Accordion key={entry.id} type="single" collapsible className="w-full">
+              <AccordionItem value={`entry-${entry.id}`}>
+                <Card className="relative w-full hover:shadow-sm hover:border-gray-400 hover:border-2 transition-all duration-300 ease-in-out">
+                  <CardHeader className="flex flex-col space-y-2 w-full py-3">
+                    <div className="flex flex-row items-center justify-start gap-4 w-full">
+                      {/* Date */}
+                      <div
+                        className={cn(
+                          'text-sm font-semibold tracking-wide rounded-md',
+                          isEditing ? 'relative' : 'border-2 border-blue-400 bg-blue-200 px-3 py-1'
+                        )}
                       >
-                        Breaking Change
-                      </Label>
-                    </div>
-                  ) : (
-                    entry.breakingChange && (
-                      <Badge variant="destructive" className="whitespace-nowrap">
-                        Breaking Change
-                      </Badge>
-                    )
-                  )}
-                  {/* Delete Entry Button */}
-                  {isEditing && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="hover:text-destructive"
-                      onClick={() => handleRemoveEntry(index)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-2 items-center">
-                  {/* Tags */}
-                  {entry.tags?.map((tag, tagIndex) => (
-                    <Badge
-                      key={tagIndex}
-                      variant="secondary"
-                      className="flex items-center space-x-1 border-[1px] border-muted-foreground"
-                    >
-                      <span>{tag}</span>
-                      {isEditing && (
-                        <button
-                          onClick={() => handleRemoveTag(index, tagIndex)}
-                          className="text-xs ml-1"
-                        >
-                          ×
-                        </button>
+                        {isEditing ? (
+                          <Input
+                            type="date"
+                            value={
+                              entry.date
+                                ? format(toZonedTime(new Date(entry.date), 'UTC'), 'yyyy-MM-dd')
+                                : ''
+                            }
+                            onChange={(e) => handleUpdateDate(index, e.target.value)}
+                            className="w- [&::-webkit-calendar-picker-indicator]:ml-[-1.25rem]"
+                            style={{ zIndex: 10 }}
+                          />
+                        ) : (
+                          <span className="whitespace-nowrap">
+                            {format(toZonedTime(new Date(entry.date), 'UTC'), 'MMM dd, yyyy')}
+                          </span>
+                        )}
+                      </div>
+                      {/* Message */}
+                      <CardTitle className="font-semibold flex-grow">
+                        {isEditing ? (
+                          <Input
+                            value={entry.message}
+                            onChange={(e) => handleEntryUpdate(index, { message: e.target.value })}
+                            className="w-full text-lg"
+                          />
+                        ) : (
+                          <span className="w-full">{entry.message}</span>
+                        )}
+                      </CardTitle>
+                      {/* Breaking Change */}
+                      {isEditing ? (
+                        <div className="flex items-center space-x-2 justify-center">
+                          <Switch
+                            checked={entry.breakingChange ?? false}
+                            onCheckedChange={(checked) =>
+                              handleUpdateBreakingChange(index, checked)
+                            }
+                            id={`breaking-change-${entry.id}`}
+                          />
+                          <Label
+                            htmlFor={`breaking-change-${entry.id}`}
+                            className="text-sm whitespace-nowrap"
+                          >
+                            Breaking Change
+                          </Label>
+                        </div>
+                      ) : (
+                        entry.breakingChange && (
+                          <Badge variant="destructive" className="whitespace-nowrap">
+                            Breaking Change
+                          </Badge>
+                        )
                       )}
-                    </Badge>
-                  ))}
-                  {/* Add Tag */}
-                  {isEditing && (
-                    <Input
-                      placeholder="Add tag"
-                      className="w-24 h-6 text-xs"
-                      onKeyDown={(e) => handleAddTag(e, index)}
-                    />
-                  )}
-                </div>
-              </CardHeader>
-              {/* Separator */}
-              <Separator className="w-[95%] mx-auto" />
-              {/* Entry Details */}
-              <CardContent className="pt-2 space-y-2">
-                {['impact', 'technicalDetails', 'userBenefit'].map((field) => (
-                  <div key={field}>
-                    {/* Field Label */}
-                    <Label className="text-base font-semibold">
-                      {field
-                        .split(/(?=[A-Z])/)
-                        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                        .join(' ')}
-                      :
-                    </Label>
-                    {/* Field Input */}
-                    <div className="mt-1 text-sm text-muted-foreground">
+                      {/* Delete Entry Button */}
+                      {isEditing && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="hover:text-destructive"
+                          onClick={() => handleRemoveEntry(index)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {/* Accordion Trigger */}
+                      <AccordionTrigger className="hover:no-underline" />
+                    </div>
+                    <div className="flex flex-wrap gap-2 items-center">
+                      {/* Tags */}
+                      {entry.tags?.map((tag, tagIndex) => (
+                        <Badge
+                          key={tagIndex}
+                          variant="secondary"
+                          className="flex items-center space-x-1 border-[1px] border-muted-foreground"
+                        >
+                          <span>{tag}</span>
+                          {isEditing && (
+                            <button
+                              onClick={() => handleRemoveTag(index, tagIndex)}
+                              className="text-xs ml-1"
+                            >
+                              ×
+                            </button>
+                          )}
+                        </Badge>
+                      ))}
+                      {/* Add Tag */}
+                      {isEditing && (
+                        <Input
+                          placeholder="Add tag"
+                          className="w-24 h-6 text-xs"
+                          onKeyDown={(e) => handleAddTag(e, index)}
+                        />
+                      )}
+                    </div>
+                    {/* Impact */}
+                    <div className="text-sm text-muted-foreground">
                       {isEditing ? (
                         <Textarea
-                          value={(entry[field as keyof ChangelogEntry] as string) || ''}
-                          onChange={(e) =>
-                            handleEntryUpdate(index, {
-                              [field]: e.target.value,
-                            })
-                          }
+                          value={entry.impact || ''}
+                          onChange={(e) => handleEntryUpdate(index, { impact: e.target.value })}
+                          placeholder="Impact"
+                          className="w-full"
                         />
                       ) : (
-                        <p>{(entry[field as keyof ChangelogEntry] as string) || 'N/A'}</p>
+                        <p>{entry.impact || 'No impact description provided.'}</p>
                       )}
                     </div>
-                  </div>
-                ))}
-                {/* Pull Requests */}
-                {(isEditing || entry.pullRequests?.length > 0) && (
-                  <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="pull-requests">
-                      <AccordionTrigger>Associated Pull Requests</AccordionTrigger>
-                      <AccordionContent className="flex flex-col gap-2">
-                        {entry.pullRequests?.map((pr, prIndex) => (
-                          <div
-                            key={pr.id}
-                            className={`${
-                              isEditing ? 'px-2 my-2' : 'p-0'
-                            } flex items-center space-x-2`}
-                          >
+                  </CardHeader>
+                  <AccordionContent>
+                    <Separator className="w-[95%] mx-auto mb-4" />
+                    {/* Entry Details */}
+                    <CardContent className="pt-2 space-y-2">
+                      {['technicalDetails', 'userBenefit'].map((field) => (
+                        <div key={field}>
+                          <Label className="text-base font-semibold">
+                            {field
+                              .split(/(?=[A-Z])/)
+                              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                              .join(' ')}
+                            :
+                          </Label>
+                          <div className="mt-1 text-sm text-muted-foreground">
                             {isEditing ? (
-                              <>
-                                <Input
-                                  value={pr.prNumber}
-                                  onChange={(e) =>
-                                    handleUpdatePullRequest(index, prIndex, {
-                                      prNumber: parseInt(e.target.value) || 0,
-                                    })
-                                  }
-                                  className="w-20"
-                                  placeholder="PR #"
-                                />
-                                <Input
-                                  value={pr.title}
-                                  onChange={(e) =>
-                                    handleUpdatePullRequest(index, prIndex, {
-                                      title: e.target.value,
-                                    })
-                                  }
-                                  className="flex-grow"
-                                  placeholder="PR Title"
-                                />
-                                <Input
-                                  value={pr.url}
-                                  onChange={(e) =>
-                                    handleUpdatePullRequest(index, prIndex, {
-                                      url: e.target.value,
-                                    })
-                                  }
-                                  className="flex-grow"
-                                  placeholder="PR URL"
-                                />
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleRemovePullRequest(index, prIndex)}
-                                  className="hover:text-destructive"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </>
+                              <Textarea
+                                value={(entry[field as keyof ChangelogEntry] as string) || ''}
+                                onChange={(e) =>
+                                  handleEntryUpdate(index, {
+                                    [field]: e.target.value,
+                                  })
+                                }
+                              />
                             ) : (
-                              <a
-                                href={pr.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center text-blue-500 hover:text-blue-600"
-                              >
-                                <ExternalLink className="h-4 w-4 mr-2" />#{pr.prNumber} - {pr.title}
-                              </a>
+                              <p>{(entry[field as keyof ChangelogEntry] as string) || 'N/A'}</p>
                             )}
                           </div>
-                        ))}
-                        {isEditing && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-fit ml-2"
-                            onClick={() => handleAddPullRequest(index)}
-                          >
-                            <Plus className="h-4 w-4 mr-2" /> Add Pull Request
-                          </Button>
-                        )}
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                )}
-              </CardContent>
-            </Card>
+                        </div>
+                      ))}
+                      {/* Pull Requests */}
+                      {(isEditing || entry.pullRequests?.length > 0) && (
+                        <Accordion type="single" collapsible className="w-full">
+                          <AccordionItem value="pull-requests">
+                            <AccordionTrigger>Associated Pull Requests</AccordionTrigger>
+                            <AccordionContent className="flex flex-col gap-2">
+                              {entry.pullRequests?.map((pr, prIndex) => (
+                                <div
+                                  key={pr.id}
+                                  className={`${
+                                    isEditing ? 'px-2 my-2' : 'p-0'
+                                  } flex items-center space-x-2`}
+                                >
+                                  {isEditing ? (
+                                    <>
+                                      <Input
+                                        value={pr.prNumber}
+                                        onChange={(e) =>
+                                          handleUpdatePullRequest(index, prIndex, {
+                                            prNumber: parseInt(e.target.value) || 0,
+                                          })
+                                        }
+                                        className="w-20"
+                                        placeholder="PR #"
+                                      />
+                                      <Input
+                                        value={pr.title}
+                                        onChange={(e) =>
+                                          handleUpdatePullRequest(index, prIndex, {
+                                            title: e.target.value,
+                                          })
+                                        }
+                                        className="flex-grow"
+                                        placeholder="PR Title"
+                                      />
+                                      <Input
+                                        value={pr.url}
+                                        onChange={(e) =>
+                                          handleUpdatePullRequest(index, prIndex, {
+                                            url: e.target.value,
+                                          })
+                                        }
+                                        className="flex-grow"
+                                        placeholder="PR URL"
+                                      />
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleRemovePullRequest(index, prIndex)}
+                                        className="hover:text-destructive"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    <a
+                                      href={pr.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center text-blue-500 hover:text-blue-600"
+                                    >
+                                      <ExternalLink className="h-4 w-4 mr-2" />#{pr.prNumber} -{' '}
+                                      {pr.title}
+                                    </a>
+                                  )}
+                                </div>
+                              ))}
+                              {isEditing && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-fit ml-2"
+                                  onClick={() => handleAddPullRequest(index)}
+                                >
+                                  <Plus className="h-4 w-4 mr-2" /> Add Pull Request
+                                </Button>
+                              )}
+                            </AccordionContent>
+                          </AccordionItem>
+                        </Accordion>
+                      )}
+                    </CardContent>
+                  </AccordionContent>
+                </Card>
+              </AccordionItem>
+            </Accordion>
           ))}
           {isEditing && (
             <Button onClick={handleAddEntry} className="w-full">

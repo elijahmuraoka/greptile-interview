@@ -42,7 +42,15 @@ export async function updateChangelogWithEntriesAction(
   id: string,
   changelog: ChangelogWithEntries
 ) {
-  return await updateChangelogWithEntries(id, changelog);
+  // Ensure dates are properly formatted before sending to the database
+  const formattedChangelog = {
+    ...changelog,
+    entries: changelog.entries.map((entry) => ({
+      ...entry,
+      date: new Date(entry.date), // Ensure date is a Date object
+    })),
+  };
+  return await updateChangelogWithEntries(id, formattedChangelog);
 }
 
 export async function generateAndSaveChangelog(

@@ -69,7 +69,7 @@ export async function updateChangelogWithEntries(
             .update(changelogEntries)
             .set({
               message: entry.message,
-              date: entry.date,
+              date: new Date(entry.date),
               tags: entry.tags,
               impact: entry.impact,
               technicalDetails: entry.technicalDetails,
@@ -85,7 +85,7 @@ export async function updateChangelogWithEntries(
             .values({
               changelogId: id,
               message: entry.message,
-              date: entry.date,
+              date: new Date(entry.date),
               tags: entry.tags,
               impact: entry.impact,
               technicalDetails: entry.technicalDetails,
