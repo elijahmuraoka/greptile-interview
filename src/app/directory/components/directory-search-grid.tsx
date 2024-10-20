@@ -74,7 +74,7 @@ export default function DirectorySearchGrid({ changelogs }: DirectorySearchGridP
                   Created by:{' '}
                   <Link
                     href={changelog.user.html_url}
-                    className="font-semibold hover:text-blue-600 text-blue-500 transition-all duration-200"
+                    className="font-semibold hover:text-blue-600 text-blue-500 transition-all duration-200 tracking-wide"
                   >
                     {`@${changelog.user.username}`}
                   </Link>

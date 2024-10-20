@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ChangelogWithEntries,
   ChangelogEntry,
@@ -8,10 +8,21 @@ import {
   ChangelogEntryWithPRsAndCommits,
   NewChangelogEntryWithPRsAndCommits,
   NewChangelogWithEntries,
+  User,
 } from '@/db/schema';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Trash2, Plus, Undo2, Edit, Globe, Save, Loader2 } from 'lucide-react';
+import {
+  ExternalLink,
+  Trash2,
+  Plus,
+  Undo2,
+  Edit,
+  Globe,
+  Save,
+  Loader2,
+  Github,
+} from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import {
   Accordion,
@@ -34,6 +45,9 @@ import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { toZonedTime, fromZonedTime } from 'date-fns-tz';
 import { useRouter } from 'next/navigation';
+import { getUserByIdAction } from '@/actions/userActions';
+import Link from 'next/link';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface ChangelogProps {
   changelog: ChangelogWithEntries;
@@ -55,8 +69,28 @@ export default function Changelog({
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [owner, setOwner] = useState<User | null>(null);
   const router = useRouter();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchOwner = async () => {
+      try {
+        if (changelog.userId) {
+          const user = await getUserByIdAction(changelog.userId);
+          setOwner(user);
+        }
+      } catch (error) {
+        toast({
+          description: 'Error fetching owner. Please try again.',
+          variant: 'destructive',
+        });
+        console.error('Error fetching owner: ', error);
+      }
+    };
+
+    fetchOwner();
+  }, [changelog.userId]);
 
   const toggleEditing = async () => {
     try {
@@ -304,7 +338,7 @@ export default function Changelog({
           </div>
 
           {/* Right column: Edit, Undo, Trash, and Publish buttons */}
-          {isOwner && (
+          {isOwner ? (
             <div className="w-1/4 flex flex-col space-y-4 items-end">
               <div className="w-full flex flex-row space-x-2">
                 <Button
@@ -359,7 +393,22 @@ export default function Changelog({
                     : 'Publish'}
               </Button>
             </div>
-          )}
+          ) : owner ? (
+            <Link
+              href={owner.html_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:text-blue-600 transition-all duration-200 font-semibold tracking-wide w-fit flex flex-row space-x-2 items-center justify-end rounded-md border shadow-sm border-border px-3 py-2"
+            >
+              {owner.image && (
+                <Avatar>
+                  <AvatarImage src={owner.image} />
+                  <AvatarFallback>{owner.username?.charAt(0)}</AvatarFallback>
+                </Avatar>
+              )}
+              <span>{`@${owner.username}`}</span>
+            </Link>
+          ) : null}
         </div>
       </div>
       {/* Entries */}
