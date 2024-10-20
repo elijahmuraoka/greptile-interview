@@ -73,11 +73,11 @@ export default function GenerateChangelogModal({
 
   const steps = [
     {
-      title: 'Choose a Repository',
+      title: 'Step 1: Choose a Repository',
       description: 'Select a repository and the timeframe to generate the changelog.',
     },
     {
-      title: 'Edit and Publish',
+      title: 'Step 2: Edit and Publish',
       description: (
         <>
           Make changes to your changelog before publishing. For the best editing experience,{' '}
@@ -94,8 +94,8 @@ export default function GenerateChangelogModal({
       ),
     },
     {
-      title: 'Success!',
-      description: 'Changelog generated and published successfully.',
+      title: 'Step 3: Success!',
+      description: 'Your changelog has been successfully generated, and saved to your dashboard.',
     },
   ];
 
@@ -239,9 +239,10 @@ export default function GenerateChangelogModal({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <h3 className="text-3xl font-bold mb-4 text-green-700">Changelog Published!</h3>
+              <h3 className="text-3xl font-bold mb-4 text-green-700">Changelog Finished 🥳</h3>
               <p className="text-lg text-green-600 mb-8">
-                Your changelog has been successfully generated and published.
+                Continue editing in your dashboard, then publish it to the community directory if
+                you&apos;d like!
               </p>
               <div className="space-y-4">
                 <Button className="w-full bg-green-500 hover:bg-green-600 transition-colors">
