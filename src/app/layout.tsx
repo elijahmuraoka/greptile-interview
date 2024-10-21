@@ -4,6 +4,7 @@ import Navbar from '@/components/custom/navbar';
 import { Providers } from './providers';
 import { Toaster } from '@/components/ui/toaster';
 import MobilePage from '@/components/mobile-page';
+import { Analytics } from '@vercel/analytics/react';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -23,6 +24,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </main>
           <MobilePage />
           <Toaster />
+          <Analytics />
         </Providers>
       </body>
     </html>
