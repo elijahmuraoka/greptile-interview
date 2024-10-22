@@ -94,6 +94,8 @@ export async function generateAndSaveChangelog(
     return savedChangelog;
   } catch (error) {
     console.error('Error generating changelog: ', error);
-    throw error;
+    return {
+      error: 'Error generating changelog: ' + (error as Error).message,
+    };
   }
 }

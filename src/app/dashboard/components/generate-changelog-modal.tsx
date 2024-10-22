@@ -119,9 +119,12 @@ export default function GenerateChangelogModal({
     if (!selectedRepository) return;
     setIsGeneratingChangelog(true);
     try {
-      const changelog = await generateAndSaveChangelog(selectedRepository, timeframe);
-      setChangelog(changelog);
-      setChangelogHistory([changelog]);
+      const result = await generateAndSaveChangelog(selectedRepository, timeframe);
+      if ('error' in result) {
+        throw new Error(result.error);
+      }
+      setChangelog(result);
+      setChangelogHistory([result]);
       toast({
         description: 'Changelog generated successfully.',
         variant: 'success',
