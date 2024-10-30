@@ -1,4 +1,4 @@
-# RepLog AI: Intelligent Changelog Automation
+# [Replog AI: Intelligent Changelog Automation](https://replog-ai.vercel.app)
 
 RepLog AI is a Next.js application that leverages AI to generate comprehensive changelogs based on repository commit history. This tool aims to simplify the process of creating and maintaining changelogs for developers, making it easier to communicate changes to both technical and non-technical audiences.
 
